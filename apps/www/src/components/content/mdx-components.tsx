@@ -1,10 +1,17 @@
 import type { ImageProps } from "next/image";
 import * as React from "react";
 import NextImage from "next/image";
+import { useMDXComponent } from "@content-collections/mdx/react";
+
+
+
+import { cn } from "@/lib/utils";
 import { MdxCard } from "@/components/content/mdx-card";
 import { Callout } from "@/components/shared/callout";
-import { cn } from "@/lib/utils";
-import { useMDXComponent } from "next-contentlayer/hooks";
+
+
+
+
 
 const components = {
   h1: ({ className, ...props }) => (

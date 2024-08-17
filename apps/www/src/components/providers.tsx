@@ -2,8 +2,9 @@
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { ThemeProviderProps } from "next-themes/dist/types";
-import { Onborda, OnbordaProvider, Step } from "onborda";
+import type { ThemeProviderProps } from "next-themes/dist/types";
+import type { Step } from "onborda";
+import { Onborda, OnbordaProvider } from "onborda";
 import { Provider as BalancerProvider } from "react-wrap-balancer";
 
 import { TooltipProvider } from "@dingify/ui/components/tooltip";

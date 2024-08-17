@@ -6,7 +6,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "contentlayer/generated": ["./.contentlayer/generated"]
+      "content-collections": ["./.content-collections/generated"] 
     },
     "plugins": [{ "name": "next" }],
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
@@ -15,5 +15,5 @@
     "useUnknownInCatchVariables": false // TODO: Resolve errors when setting this to 'true'
   },
   "include": ["src", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", ".contentlayer/generated"]
+  "exclude": ["node_modules", ".content-collections/generated"]
 }

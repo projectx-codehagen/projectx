@@ -9,6 +9,7 @@ import { Button } from "@dingify/ui/components/button";
 import { GetStartedButton } from "../buttons/GetStartedButton";
 import { BorderBeam } from "../ui/border-beam";
 import TextShimmer from "../ui/text-shimmer";
+import Image from "next/image";
 
 export default function HeroSectionNew2() {
   const ref = useRef(null);
@@ -54,12 +55,16 @@ export default function HeroSectionNew2() {
             colorTo="var(--color-two)"
           />
 
-          <img
+          <Image
+            width={300}
+            height={400}
             src="/hero-dark.png"
             alt="Hero Image"
             className="relative hidden h-full w-full rounded-[inherit] border object-contain dark:block"
           />
-          <img
+          <Image
+            width={300}
+            height={400}
             src="/hero-light.png"
             alt="Hero Image"
             className="relative block h-full w-full  rounded-[inherit] border object-contain dark:hidden"

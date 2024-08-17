@@ -1,6 +1,6 @@
 import { fileURLToPath } from "url";
+import { withContentCollections } from "@content-collections/next";
 import createJiti from "jiti";
-import { createContentlayerPlugin } from "next-contentlayer";
 
 // Import env files to validate at build time. Use jiti so we can load .ts files in here.
 createJiti(fileURLToPath(import.meta.url))("./src/env");
@@ -30,8 +30,4 @@ const config = {
   typescript: { ignoreBuildErrors: true },
 };
 
-const withContentlayer = createContentlayerPlugin({
-  // Additional Contentlayer config options
-});
-
-export default withContentlayer(config);
+export default withContentCollections(config);

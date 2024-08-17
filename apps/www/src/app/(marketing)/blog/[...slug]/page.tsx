@@ -1,18 +1,20 @@
 import { notFound } from "next/navigation";
+import { allAuthors, allPosts } from "content-collections";
+
 import { Mdx } from "@/components/content/mdx-components";
-import { allAuthors, allPosts } from "contentlayer/generated";
 
 import "@/styles/mdx.css";
 
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Icons } from "@/components/shared/icons";
-import { env } from "@/env";
-import { absoluteUrl, cn, formatDate } from "@/lib/utils";
 import Balancer from "react-wrap-balancer";
 
 import { buttonVariants } from "@dingify/ui/components/button";
+
+import { env } from "@/env";
+import { absoluteUrl, cn, formatDate } from "@/lib/utils";
+import { Icons } from "@/components/shared/icons";
 
 interface PostPageProps {
   params: {
@@ -92,7 +94,7 @@ export default async function PostPage({ params }: PostPageProps) {
   }
 
   const authors = post.authors.map((author) =>
-    allAuthors.find(({ slug }) => slug === `/authors/${author}`)
+    allAuthors.find(({ slug }) => slug === `/authors/${author}`),
   );
 
   return (
@@ -101,7 +103,7 @@ export default async function PostPage({ params }: PostPageProps) {
         href="/blog"
         className={cn(
           buttonVariants({ variant: "ghost" }),
-          "absolute left-[-200px] top-14 hidden xl:inline-flex"
+          "absolute left-[-200px] top-14 hidden xl:inline-flex",
         )}
       >
         <Icons.chevronLeft className="mr-2 h-4 w-4" />
@@ -110,10 +112,10 @@ export default async function PostPage({ params }: PostPageProps) {
       <div>
         {post.date && (
           <time
-            dateTime={post.date}
+            dateTime={post.date.toString()}
             className="block text-sm text-muted-foreground"
           >
-            Published on {formatDate(post.date)}
+            Published on {formatDate(post.date.toString())}
           </time>
         )}
         <h1 className="mt-2 inline-block font-heading text-4xl leading-tight lg:text-5xl">
@@ -142,7 +144,7 @@ export default async function PostPage({ params }: PostPageProps) {
                     </p>
                   </div>
                 </Link>
-              ) : null
+              ) : null,
             )}
           </div>
         ) : null}
@@ -151,13 +153,13 @@ export default async function PostPage({ params }: PostPageProps) {
         <Image
           src={post.image}
           alt={post.title}
-          width={720}
+          width={720} 
           height={405}
           className="my-8 rounded-md border bg-muted transition-colors"
           priority
         />
       )}
-      <Mdx code={post.body.code} />
+      <Mdx code={post.body} />
       <hr className="mt-12" />
       <div className="flex justify-center py-6 lg:py-10">
         <Link href="/blog" className={cn(buttonVariants({ variant: "ghost" }))}>

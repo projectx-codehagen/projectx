@@ -14,7 +14,7 @@
 //   return currencies;
 // }
 
-export const fetchCurrencies = async () => {
+export const fetchCurrencies = () => {
   return [
     { iso: "EUR", symbol: "€", name: "Euro" },
     { iso: "USD", symbol: "$", name: "American Dollar" },

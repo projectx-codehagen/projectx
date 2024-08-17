@@ -45,8 +45,10 @@ next-env.d.ts
 .react-email/
 
 .vscode
-.contentlayer
+.content-colletions
 
 #API
 .wrangler.toml
 wrangler.toml
+
+.content-collections

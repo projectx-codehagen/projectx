@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { allPages, allPosts } from "contentlayer/generated";
+import { allPosts } from "content-collections";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const domain = "dingify.io"; // Replace with your actual domain

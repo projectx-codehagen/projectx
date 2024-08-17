@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
+import { allPages } from "content-collections";
+
 import { Mdx } from "@/components/content/mdx-components";
-import { allPages } from "contentlayer/generated";
 
 import "@/styles/mdx.css";
 
 import type { Metadata } from "next";
-import { siteConfig } from "@/config/site";
+
 import { env } from "@/env";
+import { siteConfig } from "@/config/site";
 import { absoluteUrl } from "@/lib/utils";
 
 interface PageProps {
@@ -92,7 +94,7 @@ export default async function PagePage({ params }: PageProps) {
         )}
       </div>
       <hr className="my-4" />
-      <Mdx code={page.body.code} />
+      <Mdx code={page.body} />
     </article>
   );
 }
