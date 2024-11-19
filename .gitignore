@@ -41,3 +41,8 @@ next-env.d.ts
 
 # turbo
 .turbo
+
+# Prisma
+/prisma/*.db
+/prisma/migrations/
+.env
