@@ -2,16 +2,19 @@
 
 import * as React from "react";
 import {
-  BookOpen,
-  Bot,
+  Building,
   Command,
+  CreditCard,
   Frame,
+  Layers,
+  LayoutDashboard,
+  Leaf,
   LifeBuoy,
   Map,
   PieChart,
+  PieChartIcon,
   Send,
-  Settings2,
-  SquareTerminal,
+  Signal,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -30,95 +33,46 @@ import {
 
 const data = {
   user: {
-    name: "shadcn",
+    name: "Codehagen",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: LayoutDashboard,
       isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
+      title: "Banking",
+      url: "/banking",
+      icon: Layers,
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
+      title: "Categories",
+      url: "/categories",
+      icon: PieChartIcon,
     },
     {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
+      title: "Investments",
+      url: "/investments",
+      icon: Signal,
+    },
+    {
+      title: "Assets",
+      url: "/assets",
+      icon: Building,
+    },
+    {
+      title: "Savings",
+      url: "/savings",
+      icon: Leaf,
+    },
+    {
+      title: "Liabilities",
+      url: "/liabilities",
+      icon: CreditCard,
     },
   ],
   navSecondary: [
@@ -135,17 +89,17 @@ const data = {
   ],
   projects: [
     {
-      name: "Design Engineering",
+      name: "Account 1",
       url: "#",
       icon: Frame,
     },
     {
-      name: "Sales & Marketing",
+      name: "Account 2",
       url: "#",
       icon: PieChart,
     },
     {
-      name: "Travel",
+      name: "Account 3",
       url: "#",
       icon: Map,
     },
