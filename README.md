@@ -42,18 +42,11 @@ All seamlessly integrated with the Badget to accelerate the development.
 Badget is a monorepo managed by [Turborepo](https://turbo.build/repo). The monorepo is split between `apps` and `packages` directories.
 
     .
-    ├── apps                         # Its app workspace which contains
-    │    ├── www                     # Nextjs app which is deployed in Vercel
-    │    ├── api                     # Hono app that is our REST-api for our SDK
+    ├── src                          # Main project lives here
+    │    ├── actions                 # All server actions
+    │    ├── app                     # Main application
+    │    ├── components              # Components for the application
     │    └── ...
-    ├── packages                     # are the shared packages that are used by the apps 
-    │    ├── db                      # Prisma DB connector
-    │    └── ui                      # Shared UI components (Shadcn)
-    ├── tooling                      # are the shared configuration that are used by the apps and packages
-    │    ├── eslint                  # Shared eslint presets
-    │    ├── prettier                # Shared prettier configuration
-    │    ├── tailwind                # Shared tailwind configuration
-    │    └── typescript              # Shared tsconfig you can extend from
     ├── LICENSE
     └── README.md
 
@@ -82,11 +75,17 @@ cp .env.example .env.local
    1. Create [Neon Database](https://neon.tech/) Account
    2. Create [Clerk](https://clerk.dev) Account
 
-5. Start the development server from either yarn or turbo:
+5.
+```bash
+#To push Prisma to Neon DB
+pnpm db:deploy
+``` 
 
+6. Start the development server from either yarn or turbo:
 ```bash
 # To start the server
 pnpm dev
+```
 
 ## Tech Stack + Features
 
@@ -105,12 +104,12 @@ pnpm dev
 
 ### UI
 
-- [Tailwind CSS](https://tailwindcss.com/) – Utility-first CSS framework for rapid UI development
 - [Shadcn/ui](https://ui.shadcn.com/) – Re-usable components built using Radix UI and Tailwind CSS
+- [MagicUI](https://magicui.design/) – Perfect to start any project with this template.
+- [Tailwind CSS](https://tailwindcss.com/) – Utility-first CSS framework for rapid UI development
 - [Framer Motion](https://framer.com/motion) – Motion library for React to animate components with ease
 - [Lucide](https://lucide.dev/) – Beautifully simple, pixel-perfect icons
-- [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) – Optimize custom fonts and remove external network requests for improved performance
-- [`ImageResponse`](https://nextjs.org/docs/app/api-reference/functions/image-response) – Generate dynamic Open Graph images at the edge
+
 
 ## Contributing
 
