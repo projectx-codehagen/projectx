@@ -2,6 +2,18 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
+import {
+  Briefcase,
+  Building2,
+  Coins,
+  Computer,
+  CreditCard,
+  Home,
+  Landmark,
+  LifeBuoy,
+  Wallet,
+  Bitcoin,
+} from "lucide-react";
 
 // Sample data for the sparklines
 const generateData = (count: number, positive: boolean) => {
@@ -14,54 +26,52 @@ export function MetricCards() {
   const metrics = [
     {
       title: "Income",
-      value: "$8,411",
-      decimal: ".11",
-      change: "+$871.22",
-      percentage: "+2.8%",
+      value: "$9,234",
+      decimal: ".67",
+      change: "+$934.12",
+      percentage: "+3.2%",
       trend: "positive",
       details: [
-        { icon: "blue", value: "+$7,514.22" },
-        { icon: "red", value: "$387.11" },
-        { icon: "gray", value: "+$100.00" },
+        { icon: Briefcase, value: "+$8,123.45", source: "Salary" },
+        { icon: Coins, value: "$512.34", source: "Dividends" },
+        { icon: Computer, value: "+$698.88", source: "Freelance" },
       ],
     },
     {
       title: "Spending",
-      value: "$6,112",
-      decimal: ".24",
-      change: "+$1,704.56",
-      percentage: "+1.9%",
+      value: "$5,789",
+      decimal: ".56",
+      change: "+$1,478.23",
+      percentage: "+2.4%",
       trend: "negative",
       details: [
-        { icon: "blue", value: "-$5,844.11" },
-        { icon: "red", value: "-$124.81" },
+        { icon: Home, value: "-$4,987.65", source: "Rent" },
+        { icon: CreditCard, value: "-$312.45", source: "Utilities" },
       ],
     },
     {
       title: "Savings Rate",
-      value: "1.2",
+      value: "1.47",
       decimal: "%",
-      change: "-0.3%",
+      change: "+0.18%",
       percentage: "",
-      trend: "negative",
+      trend: "positive",
       details: [
-        { icon: "blue", value: "+0.2%" },
-        { icon: "red", value: "-0.5%" },
+        { icon: LifeBuoy, value: "+0.28%", source: "Emergency Fund" },
+        { icon: Wallet, value: "+0.19%", source: "Retirement" },
       ],
     },
     {
       title: "Investing",
-      value: "$1,120,448",
-      decimal: ".79",
-      change: "+$3,286.91",
-      percentage: "+1.8%",
+      value: "$1,149,876",
+      decimal: ".34",
+      change: "+$4,987.65",
+      percentage: "+1.9%",
       trend: "positive",
       details: [
-        { icon: "purple", value: "+$1,514.22" },
-        { icon: "black", value: "+$1,017.11" },
-        { icon: "green", value: "+$517.11" },
-        { icon: "blue", value: "+$517.11" },
-        { icon: "gray", value: "+2" },
+        { icon: Landmark, value: "+$2,123.45", source: "Stocks" },
+        { icon: Bitcoin, value: "+$2,456.78", source: "Crypto" },
+        { icon: Building2, value: "+$407.42", source: "Real Estate" },
       ],
     },
   ];
@@ -105,14 +115,13 @@ export function MetricCards() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex gap-2 mt-4">
+            <div className="flex gap-2 mt-4 flex-wrap">
               {metric.details.map((detail, index) => (
-                <div key={index} className="flex items-center gap-1">
-                  <div
-                    className={`w-3 h-3 rounded-full bg-${detail.icon}-500`}
-                  />
+                <div key={index} className="flex items-center gap-1.5">
+                  <detail.icon className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">
                     {detail.value}
+                    <span className="ml-1 text-gray-500">{detail.source}</span>
                   </span>
                 </div>
               ))}
