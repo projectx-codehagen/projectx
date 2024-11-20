@@ -19,7 +19,7 @@ export default function Home() {
       <Header />
       <Hero />
       <Logos />
-      <Problem />
+      {/* <Problem />
       <Solution />
       <HowItWorks />
       <TestimonialsCarousel />
@@ -27,8 +27,8 @@ export default function Home() {
       <Testimonials />
       <Pricing />
       <FAQ />
-      {/* <Blog /> */}
-      <CTA />
+      <Blog />
+      <CTA /> */}
       <Footer />
     </main>
   );
