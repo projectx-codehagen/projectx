@@ -8,6 +8,13 @@ import {
   ArrowUpIcon,
   CalendarIcon,
   MoreHorizontal,
+  ShoppingCart,
+  Utensils,
+  Home,
+  CreditCard,
+  Briefcase,
+  Zap,
+  type LucideIcon,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -36,56 +43,101 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Sample transaction data
-const transactions = [
-  {
-    id: "1",
-    date: new Date("2023-11-15"),
-    description: "Grocery Store",
-    amount: -85.5,
-    category: "Food",
-  },
-  {
-    id: "2",
-    date: new Date("2023-11-14"),
-    description: "Salary Deposit",
-    amount: 3000.0,
-    category: "Income",
-  },
-  {
-    id: "3",
-    date: new Date("2023-11-13"),
-    description: "Electric Bill",
-    amount: -120.75,
-    category: "Utilities",
-  },
-  {
-    id: "4",
-    date: new Date("2023-11-12"),
-    description: "Online Shopping",
-    amount: -65.99,
-    category: "Shopping",
-  },
-  {
-    id: "5",
-    date: new Date("2023-11-11"),
-    description: "Restaurant Dinner",
-    amount: -45.0,
-    category: "Food",
-  },
-];
+interface Category {
+  name: string;
+  icon: LucideIcon;
+}
+
+const categoryIcons: Record<string, Category> = {
+  Food: { name: "Food", icon: Utensils },
+  Shopping: { name: "Shopping", icon: ShoppingCart },
+  Income: { name: "Income", icon: Briefcase },
+  Utilities: { name: "Utilities", icon: Zap },
+  Housing: { name: "Housing", icon: Home },
+  Credit: { name: "Credit", icon: CreditCard },
+};
 
 export default function AccountTransactions() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [editingTransaction, setEditingTransaction] = useState<string | null>(
+    null
+  );
+  const [transactions, setTransactions] = useState([
+    {
+      id: "1",
+      date: new Date("2023-11-15"),
+      description: "Grocery Store",
+      amount: -85.5,
+      category: "Food",
+    },
+    {
+      id: "2",
+      date: new Date("2023-11-14"),
+      description: "Salary Deposit",
+      amount: 3000.0,
+      category: "Income",
+    },
+    {
+      id: "3",
+      date: new Date("2023-11-13"),
+      description: "Electric Bill",
+      amount: -120.75,
+      category: "Utilities",
+    },
+    {
+      id: "4",
+      date: new Date("2023-11-12"),
+      description: "Online Shopping",
+      amount: -65.99,
+      category: "Shopping",
+    },
+    {
+      id: "5",
+      date: new Date("2023-11-11"),
+      description: "Restaurant Dinner",
+      amount: -45.0,
+      category: "Food",
+    },
+  ]);
 
-  const filteredTransactions = transactions.filter(
-    (transaction) =>
+  const updateTransactionCategory = (
+    transactionId: string,
+    newCategory: string
+  ) => {
+    setTransactions((prevTransactions) =>
+      prevTransactions.map((transaction) =>
+        transaction.id === transactionId
+          ? { ...transaction, category: newCategory }
+          : transaction
+      )
+    );
+    setEditingTransaction(null);
+  };
+
+  // Get unique categories from transactions
+  const categories = ["all", ...new Set(transactions.map((t) => t.category))];
+
+  const filteredTransactions = transactions.filter((transaction) => {
+    const matchesSearch =
       transaction.description
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      transaction.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesCategory =
+      categoryFilter === "all" || transaction.category === categoryFilter;
+
+    return matchesSearch && matchesCategory;
+  });
 
   const totalBalance = transactions.reduce(
     (sum, transaction) => sum + transaction.amount,
@@ -97,6 +149,16 @@ export default function AccountTransactions() {
   const totalExpenses = transactions
     .filter((t) => t.amount < 0)
     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+  const renderCategoryWithIcon = (category: string) => {
+    const CategoryIcon = categoryIcons[category]?.icon;
+    return (
+      <div className="flex items-center gap-2">
+        {CategoryIcon && <CategoryIcon className="h-4 w-4" />}
+        {category}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -165,10 +227,10 @@ export default function AccountTransactions() {
                 You've made {transactions.length} transactions this period.
               </CardDescription>
             </div>
-            <Button variant="outline" size="icon">
+            {/* <Button variant="outline" size="icon">
               <CalendarIcon className="h-4 w-4" />
               <span className="sr-only">View calendar</span>
-            </Button>
+            </Button> */}
           </div>
         </CardHeader>
         <CardContent>
@@ -179,37 +241,103 @@ export default function AccountTransactions() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
             />
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue>
+                  {categoryFilter === "all"
+                    ? "All Categories"
+                    : renderCategoryWithIcon(categoryFilter)}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <div className="flex items-center gap-2">All Categories</div>
+                </SelectItem>
+                {Object.entries(categoryIcons).map(
+                  ([category, { icon: Icon }]) => (
+                    <SelectItem key={category} value={category}>
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-4 w-4" />
+                        {category}
+                      </div>
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
           </div>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead></TableHead>
+                <TableHead className="w-[120px]">Date</TableHead>
+                <TableHead className="w-[200px]">Description</TableHead>
+                <TableHead className="w-[180px]">Category</TableHead>
+                <TableHead className="text-right w-[150px]">Amount</TableHead>
+                <TableHead className="w-[70px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTransactions.map((transaction) => (
                 <TableRow key={transaction.id}>
-                  <TableCell>
+                  <TableCell className="w-[120px]">
                     {format(transaction.date, "MMM d, yyyy")}
                   </TableCell>
-                  <TableCell>{transaction.description}</TableCell>
-                  <TableCell>{transaction.category}</TableCell>
-                  <TableCell
-                    className={cn(
-                      "text-right",
-                      transaction.amount > 0 ? "text-green-600" : "text-red-600"
-                    )}
-                  >
-                    {transaction.amount.toLocaleString("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                    })}
+                  <TableCell className="w-[200px]">
+                    {transaction.description}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="w-[180px]">
+                    {editingTransaction === transaction.id ? (
+                      <Select
+                        defaultValue={transaction.category}
+                        onValueChange={(newCategory) => {
+                          updateTransactionCategory(
+                            transaction.id,
+                            newCategory
+                          );
+                        }}
+                      >
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue>
+                            {renderCategoryWithIcon(transaction.category)}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent align="start">
+                          {Object.entries(categoryIcons).map(
+                            ([category, { icon: Icon }]) => (
+                              <SelectItem key={category} value={category}>
+                                <div className="flex items-center gap-2">
+                                  <Icon className="h-4 w-4" />
+                                  {category}
+                                </div>
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div
+                        className="flex items-center gap-2 cursor-pointer hover:text-primary w-[140px]"
+                        onClick={() => setEditingTransaction(transaction.id)}
+                      >
+                        {renderCategoryWithIcon(transaction.category)}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right w-[150px]">
+                    <span
+                      className={cn(
+                        transaction.amount > 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      )}
+                    >
+                      {transaction.amount.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      })}
+                    </span>
+                  </TableCell>
+                  <TableCell className="w-[70px]">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -220,7 +348,11 @@ export default function AccountTransactions() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem>View details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit category</DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setEditingTransaction(transaction.id)}
+                        >
+                          Edit category
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
