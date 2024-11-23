@@ -3,13 +3,7 @@ import { PortfolioAllocation } from "@/components/investments/portfolio-allocati
 import { PositionsTable } from "@/components/investments/positions-table";
 import { StockCards } from "@/components/stock-cards";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { TrendingUp } from "lucide-react";
 
 export default function InvestmentsPage() {
   return (
@@ -20,17 +14,6 @@ export default function InvestmentsPage() {
             <CardTitle className="text-sm font-medium">
               Total Portfolio
             </CardTitle>
-            <Select defaultValue="1M">
-              <SelectTrigger className="w-[70px] h-8 text-xs">
-                <SelectValue placeholder="Period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1M">1M</SelectItem>
-                <SelectItem value="3M">3M</SelectItem>
-                <SelectItem value="6M">6M</SelectItem>
-                <SelectItem value="1Y">1Y</SelectItem>
-              </SelectContent>
-            </Select>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-2">
@@ -46,22 +29,17 @@ export default function InvestmentsPage() {
               <div className="h-[180px]">
                 <BalanceChart />
               </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+                <span>Portfolio is up 2.5% from last month</span>
+              </div>
             </div>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Top Performer</CardTitle>
-            <Select defaultValue="1M">
-              <SelectTrigger className="w-[70px] h-8 text-xs">
-                <SelectValue placeholder="Period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1M">1M</SelectItem>
-                <SelectItem value="3M">3M</SelectItem>
-                <SelectItem value="6M">6M</SelectItem>
-              </SelectContent>
-            </Select>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-2">
@@ -77,22 +55,17 @@ export default function InvestmentsPage() {
               <div className="h-[180px]">
                 <BalanceChart variant="secondary" />
               </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+                <span>Best performing asset this month</span>
+              </div>
             </div>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Daily Change</CardTitle>
-            <Select defaultValue="24H">
-              <SelectTrigger className="w-[70px] h-8 text-xs">
-                <SelectValue placeholder="Period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="24H">24H</SelectItem>
-                <SelectItem value="7D">7D</SelectItem>
-                <SelectItem value="1M">1M</SelectItem>
-              </SelectContent>
-            </Select>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-2">
@@ -106,6 +79,10 @@ export default function InvestmentsPage() {
               </div>
               <div className="h-[180px]">
                 <BalanceChart />
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+                <span>Market is up 1.2% today</span>
               </div>
             </div>
           </CardContent>

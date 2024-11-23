@@ -1,60 +1,149 @@
-"use client"
+"use client";
 
-import { Line, LineChart, ResponsiveContainer, Tooltip } from "recharts"
+import {
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  CartesianGrid,
+  XAxis,
+  Area,
+  AreaChart,
+} from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 
-const data = [
-  { value: 100 },
-  { value: 120 },
-  { value: 110 },
-  { value: 105 },
-  { value: 100 },
-  { value: 110 },
-  { value: 115 },
-  { value: 140 },
-]
+// Generate more realistic data with a slight upward trend
+const generateChartData = () => {
+  const baseValue = 6800;
+  const volatility = 150;
+  const trend = 25; // Daily upward trend
+
+  return Array.from({ length: 30 }, (_, i) => {
+    const randomChange = (Math.random() - 0.5) * volatility;
+    const trendValue = trend * i;
+    return {
+      date: `2024-01-${(i + 1).toString().padStart(2, "0")}`,
+      value: Math.round(baseValue + randomChange + trendValue),
+    };
+  });
+};
+
+const data = generateChartData();
 
 interface BalanceChartProps {
-  variant?: "primary" | "secondary"
+  variant?: "primary" | "secondary";
 }
 
 export function BalanceChart({ variant = "primary" }: BalanceChartProps) {
+  const chartConfig = {
+    value: {
+      label: "Portfolio Value",
+      color:
+        variant === "primary" ? "hsl(var(--chart-1))" : "hsl(var(--chart-2))",
+    },
+  } satisfies ChartConfig;
+
   return (
-    <div className="h-[200px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
-          <Tooltip
+    <ResponsiveContainer width="100%" height="100%">
+      <ChartContainer config={chartConfig}>
+        <AreaChart
+          data={data}
+          margin={{
+            top: 5,
+            right: 5,
+            left: 5,
+            bottom: 5,
+          }}
+        >
+          <CartesianGrid
+            vertical={false}
+            strokeDasharray="3 3"
+            className="stroke-muted"
+          />
+          <XAxis
+            dataKey="date"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={(value) => value.split("-")[2]}
+            className="text-xs text-muted-foreground"
+          />
+          <ChartTooltip
+            cursor={false}
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 return (
-                  <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-2 shadow-sm">
+                  <div className="rounded-lg border border-border bg-background p-2 shadow-sm">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex flex-col">
-                        <span className="text-[0.70rem] uppercase text-zinc-400">Value</span>
-                        <span className="font-bold text-zinc-50">
+                        <span className="text-[0.70rem] uppercase text-muted-foreground">
+                          Value
+                        </span>
+                        <span className="font-bold text-foreground">
                           ${payload[0].value}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[0.70rem] uppercase text-muted-foreground">
+                          Date
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {payload[0].payload.date.split("-")[2]}
                         </span>
                       </div>
                     </div>
                   </div>
-                )
+                );
               }
-              return null
+              return null;
             }}
           />
-          <Line
+          <defs>
+            <linearGradient
+              id={`fillGradient-${variant}`}
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="1"
+            >
+              <stop
+                offset="5%"
+                stopColor={
+                  variant === "primary"
+                    ? "hsl(var(--chart-1))"
+                    : "hsl(var(--chart-2))"
+                }
+                stopOpacity={0.3}
+              />
+              <stop
+                offset="95%"
+                stopColor={
+                  variant === "primary"
+                    ? "hsl(var(--chart-1))"
+                    : "hsl(var(--chart-2))"
+                }
+                stopOpacity={0}
+              />
+            </linearGradient>
+          </defs>
+          <Area
             type="monotone"
             dataKey="value"
-            stroke={variant === "primary" ? "#3b82f6" : "#22c55e"}
+            stroke={
+              variant === "primary"
+                ? "hsl(var(--chart-1))"
+                : "hsl(var(--chart-2))"
+            }
             strokeWidth={2}
-            dot={{
-              r: 4,
-              fill: variant === "primary" ? "#3b82f6" : "#22c55e",
-              strokeWidth: 0,
-            }}
+            fill={`url(#fillGradient-${variant})`}
+            dot={false}
           />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  )
+        </AreaChart>
+      </ChartContainer>
+    </ResponsiveContainer>
+  );
 }
-
