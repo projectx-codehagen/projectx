@@ -32,6 +32,7 @@ export function NavProjects({
     name: string;
     url: string;
     icon: LucideIcon;
+    isActive?: boolean;
   }[];
 }) {
   const { isMobile } = useSidebar();
@@ -42,7 +43,7 @@ export function NavProjects({
       <SidebarMenu>
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton asChild isActive={item.isActive}>
               <a href={item.url}>
                 <item.icon />
                 <span>{item.name}</span>
