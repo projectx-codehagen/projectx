@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BalanceChart } from "./components/balance-chart"
-import { StockCards } from "./components/stock-cards"
-import { PortfolioAllocation } from "./components/portfolio-allocation"
-import { PositionsTable } from "./components/positions-table"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BalanceChart } from "./balance-chart";
+import { StockCards } from "./stock-cards";
+import { PortfolioAllocation } from "./portfolio-allocation";
+import { PositionsTable } from "./positions-table";
 
 export default function Dashboard() {
   return (
@@ -12,10 +12,14 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="bg-zinc-950 border-zinc-800 text-white">
           <CardHeader>
-            <CardTitle className="text-2xl font-normal">Total balance</CardTitle>
+            <CardTitle className="text-2xl font-normal">
+              Total balance
+            </CardTitle>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-medium">$10,241</span>
-              <span className="text-sm text-zinc-400">you have gained 4.7% last month</span>
+              <span className="text-sm text-zinc-400">
+                you have gained 4.7% last month
+              </span>
             </div>
           </CardHeader>
           <CardContent>
@@ -52,6 +56,5 @@ export default function Dashboard() {
         <PositionsTable />
       </div>
     </div>
-  )
+  );
 }
-
