@@ -1,28 +1,57 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { CategoryChart } from "@/components/categories/category-chart";
+import { CategoryList } from "@/components/categories/category-list";
+import { RecentTransactions } from "@/components/categories/recent-transactions";
+import { CategoryTrends } from "@/components/categories/category-trends";
+import { BudgetSummary } from "@/components/categories/budget-summary";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EditBudgetComponent } from "@/components/categories/edit-budget";
 
-export default function Page() {
+export default function CategoriesPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-2xl font-bold tracking-tight">Your categories</h2>
+        <EditBudgetComponent />
       </div>
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+
+      <BudgetSummary />
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Spending by Category
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CategoryChart />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Category Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CategoryList />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* <CategoryTrends /> */}
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Recent Transactions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RecentTransactions />
+        </CardContent>
+      </Card>
     </div>
   );
 }
