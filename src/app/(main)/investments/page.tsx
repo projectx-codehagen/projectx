@@ -1,13 +1,19 @@
 import { BalanceChart } from "@/components/investments/balance-chart";
 import { PortfolioAllocation } from "@/components/investments/portfolio-allocation";
 import { PositionsTable } from "@/components/investments/positions-table";
+import { AddInvestmentComponent } from "@/components/investments/add-investment";
 import { StockCards } from "@/components/stock-cards";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 
-export default function InvestmentsPage() {
+export default async function InvestmentsPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-2xl font-bold tracking-tight">Your investments</h2>
+        <AddInvestmentComponent />
+      </div>
+
       <div className="grid auto-rows-min gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -1,13 +1,20 @@
+import { getCurrentUser } from "@/actions/user/get-current-user";
 import { AssetAllocation } from "@/components/assets/asset-allocation";
 import { AssetCards } from "@/components/assets/asset-cards";
 import { AssetTable } from "@/components/assets/asset-table";
+import { AddAssetComponent } from "@/components/assets/add-asset";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TotalAssetsChart } from "@/components/assets/total-assets-chart";
 import { TrendingUp } from "lucide-react";
 
-export default function AssetsPage() {
+export default async function AssetsPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-2xl font-bold tracking-tight">Your assets</h2>
+        <AddAssetComponent />
+      </div>
+
       <div className="grid auto-rows-min gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
