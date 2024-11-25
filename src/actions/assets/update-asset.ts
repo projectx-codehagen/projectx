@@ -39,6 +39,7 @@ export async function updateAsset(input: z.infer<typeof updateAssetSchema>) {
     }
 
     const newValue = new Prisma.Decimal(validatedFields.value);
+    const oldValue = existingAsset.value;
 
     // Update the asset
     const asset = await prisma.asset.update({
@@ -57,12 +58,30 @@ export async function updateAsset(input: z.infer<typeof updateAssetSchema>) {
       },
     });
 
-    // Create new valuation if value changed
-    if (!existingAsset.value.equals(newValue)) {
-      await prisma.assetValuation.create({
+    // Create new valuation
+    await prisma.assetValuation.create({
+      data: {
+        value: newValue,
+        date: new Date(),
+        assetId: asset.id,
+      },
+    });
+
+    // Create transaction for value change
+    if (!oldValue.equals(newValue)) {
+      const changeType = newValue.greaterThan(oldValue)
+        ? "APPRECIATION"
+        : "DEPRECIATION";
+      const changeAmount = newValue.minus(oldValue).abs();
+
+      await prisma.assetTransaction.create({
         data: {
-          value: newValue,
+          type: changeType,
+          amount: changeAmount,
           date: new Date(),
+          description: `Value ${changeType.toLowerCase()} from $${oldValue
+            .toNumber()
+            .toLocaleString()} to $${newValue.toNumber().toLocaleString()}`,
           assetId: asset.id,
         },
       });

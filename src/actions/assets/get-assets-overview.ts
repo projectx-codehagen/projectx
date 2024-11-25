@@ -22,8 +22,10 @@ interface AssetOverview {
     date: Date;
     description: string;
     asset: {
+      id: string;
       name: string;
       type: string;
+      value: number;
     };
   }[];
   monthlyTrend: {
@@ -107,8 +109,10 @@ export async function getAssetsOverview(): Promise<{
           date: tx.date,
           description: tx.description || "",
           asset: {
+            id: asset.id,
             name: asset.name,
             type: asset.type,
+            value: asset.value.toNumber(),
           },
         }))
       )
