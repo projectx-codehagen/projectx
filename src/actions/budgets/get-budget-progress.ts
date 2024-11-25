@@ -87,7 +87,7 @@ export async function getBudgetProgress(
       startDate: budget.startDate,
       endDate: budget.endDate,
       daysRemaining: Math.ceil(
-        (budget.endDate.getTime() - new Date().getTime()) /
+        ((budget.endDate?.getTime() ?? 0) - new Date().getTime()) /
           (1000 * 60 * 60 * 24)
       ),
     };
