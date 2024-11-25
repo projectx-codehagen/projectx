@@ -2,11 +2,11 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Home, Car, Coins, Briefcase } from "lucide-react";
-import { EmptyPlaceholder } from "@/components/empty-placeholder";
 
 interface AssetCardsProps {
   data?: {
     name: string;
+    originalName: string;
     value: number;
     percentage: number;
     progress: string;
@@ -45,7 +45,7 @@ export function AssetCards({ data = [] }: AssetCardsProps) {
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
       {placeholderAssets.map((asset) => {
         // Find matching data for this asset type
-        const assetData = data?.find((d) => d.name === asset.id);
+        const assetData = data?.find((d) => d.originalName === asset.id);
 
         if (assetData) {
           // Render card with real data
@@ -55,7 +55,7 @@ export function AssetCards({ data = [] }: AssetCardsProps) {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <asset.icon className="h-4 w-4 text-muted-foreground" />
-                    <div className="text-sm font-medium">{asset.name}</div>
+                    <div className="text-sm font-medium">{assetData.name}</div>
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="text-2xl font-bold">

@@ -10,6 +10,7 @@ interface AssetOverview {
   fixedAssets: number;
   assetAllocation: {
     name: string;
+    originalName: string;
     value: number;
     percentage: number;
     progress: string;
@@ -32,6 +33,13 @@ interface AssetOverview {
     fixed: number;
   }[];
 }
+
+const assetTypeDisplayNames: Record<string, string> = {
+  REAL_ESTATE: "Real Estate",
+  VEHICLE: "Vehicles",
+  PRECIOUS_METALS: "Precious Metals",
+  OTHER: "Other Assets",
+};
 
 export async function getAssetsOverview(): Promise<{
   success: boolean;
@@ -82,7 +90,8 @@ export async function getAssetsOverview(): Promise<{
         return acc;
       }, {} as Record<string, number>)
     ).map(([name, value]) => ({
-      name,
+      name: assetTypeDisplayNames[name] || name,
+      originalName: name,
       value,
       percentage: (value / totalAssets) * 100,
       progress: `w-[${((value / totalAssets) * 100).toFixed(1)}%]`,
