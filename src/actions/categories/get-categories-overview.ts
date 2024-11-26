@@ -78,13 +78,20 @@ export async function getCategoriesOverview(): Promise<{
         0
       );
       const budget = category.budgets[0]?.amount.toNumber() || 0;
+
+      // Calculate percentage of total spending (0 if no spending)
+      const percentage = totalSpending > 0 ? (amount / totalSpending) * 100 : 0;
+
+      // Calculate progress towards budget (0 if no budget)
+      const progress = budget > 0 ? (amount / budget) * 100 : 0;
+
       return {
         name: category.name,
         amount,
         budget,
         color: `hsl(var(--chart-${categories.indexOf(category) + 1}))`,
-        percentage: (amount / totalSpending) * 100,
-        progress: budget > 0 ? (amount / budget) * 100 : 0,
+        percentage,
+        progress,
       };
     });
 
@@ -104,7 +111,7 @@ export async function getCategoriesOverview(): Promise<{
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 5);
 
-    // Calculate monthly spending by category
+    // Calculate monthly spending
     const monthlySpending = await calculateMonthlySpending(categories);
 
     return {

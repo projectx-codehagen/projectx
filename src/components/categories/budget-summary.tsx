@@ -21,7 +21,8 @@ export function BudgetSummary({ data }: BudgetSummaryProps) {
     (sum, cat) => sum + cat.budget,
     0
   );
-  const totalProgress = (data.totalSpending / totalBudget) * 100;
+  const totalProgress =
+    totalBudget > 0 ? (data.totalSpending / totalBudget) * 100 : 0;
 
   // Find biggest category
   const biggestCategory = data.categoryBreakdown.reduce(
@@ -36,9 +37,9 @@ export function BudgetSummary({ data }: BudgetSummaryProps) {
     today.getMonth() + 1,
     0
   ).getDate();
-  const dailyAverage = data.totalSpending / today.getDate();
+  const currentDay = today.getDate();
+  const dailyAverage = data.totalSpending / currentDay;
   const dailyTarget = totalBudget / daysInMonth;
-  const dailyProgress = (dailyAverage / dailyTarget) * 100;
 
   const summary = [
     {
@@ -46,9 +47,12 @@ export function BudgetSummary({ data }: BudgetSummaryProps) {
       amount: data.totalSpending,
       total: totalBudget,
       icon: TrendingDown,
-      change: `-$${(totalBudget - data.totalSpending).toLocaleString()} (${(
-        100 - totalProgress
-      ).toFixed(1)}% remaining)`,
+      change:
+        totalBudget > 0
+          ? `$${(totalBudget - data.totalSpending).toLocaleString()} (${(
+              100 - totalProgress
+            ).toFixed(1)}% remaining)`
+          : "No budget set",
       progress: totalProgress,
       description: "of budget used this month",
     },
@@ -57,7 +61,9 @@ export function BudgetSummary({ data }: BudgetSummaryProps) {
       amount: biggestCategory?.amount || 0,
       category: biggestCategory?.name || "None",
       icon: TrendingUp,
-      change: `${biggestCategory?.percentage.toFixed(1)}% of total spending`,
+      change: biggestCategory
+        ? `${biggestCategory.percentage.toFixed(1)}% of total spending`
+        : "No spending yet",
       progress: biggestCategory?.progress || 0,
       description: "of category budget",
     },
@@ -65,10 +71,13 @@ export function BudgetSummary({ data }: BudgetSummaryProps) {
       title: "Daily Average",
       amount: dailyAverage,
       icon: AlertCircle,
-      change: `${dailyProgress > 100 ? "+" : "-"}$${Math.abs(
-        dailyAverage - dailyTarget
-      ).toFixed(0)} vs target`,
-      progress: dailyProgress,
+      change:
+        dailyTarget > 0
+          ? dailyAverage > dailyTarget
+            ? `$${(dailyAverage - dailyTarget).toFixed(0)} over daily target`
+            : `$${(dailyTarget - dailyAverage).toFixed(0)} under daily target`
+          : "No daily target set",
+      progress: dailyTarget > 0 ? (dailyAverage / dailyTarget) * 100 : 0,
       description: "of daily target",
     },
   ];

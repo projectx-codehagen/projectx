@@ -12,37 +12,10 @@ export async function getCategories() {
 
     const categories = await prisma.category.findMany({
       where: { userId },
-      include: {
-        _count: {
-          select: { transactions: true },
-        },
-        transactions: {
-          select: {
-            amount: true,
-          },
-        },
-        budgets: {
-          include: {
-            budget: true,
-          },
-        },
-      },
       orderBy: { name: "asc" },
     });
 
-    // Calculate totals and transform data
-    const categoriesWithTotals = categories.map((category) => ({
-      ...category,
-      transactionCount: category._count.transactions,
-      total: category.transactions.reduce(
-        (sum, transaction) => sum + transaction.amount.toNumber(),
-        0
-      ),
-      _count: undefined,
-      transactions: undefined,
-    }));
-
-    return { success: true, categories: categoriesWithTotals };
+    return { success: true, categories };
   } catch (error) {
     console.error("Error in getCategories:", error);
     if (error instanceof Error) {

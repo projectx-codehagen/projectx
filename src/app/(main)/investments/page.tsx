@@ -15,7 +15,6 @@ export default async function InvestmentsPage() {
   if (!user) redirect("/sign-in");
 
   const { success, data, error } = await getInvestmentsOverview();
-  console.log("Page data:", data);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

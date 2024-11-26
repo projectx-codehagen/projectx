@@ -9,18 +9,24 @@ import { redirect } from "next/navigation";
 import { EmptyPlaceholder } from "@/components/empty-placeholder";
 import { getCategoriesOverview } from "@/actions/categories/get-categories-overview";
 import { BudgetSummary } from "@/components/categories/budget-summary";
+import { CreateBudgetButton } from "@/components/categories/create-budget-button";
 
 export default async function CategoriesPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/sign-in");
 
   const { success, data, error } = await getCategoriesOverview();
+  console.log(data);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-2xl font-bold tracking-tight">Your categories</h2>
-        <EditBudgetComponent />
+        {data?.categoryBreakdown && data.categoryBreakdown.length > 0 ? (
+          <EditBudgetComponent />
+        ) : (
+          <CreateBudgetButton />
+        )}
       </div>
 
       {data?.categoryBreakdown && data.categoryBreakdown.length > 0 && (

@@ -102,7 +102,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
               className="h-2.5 w-2.5 rounded-full"
               style={{ backgroundColor: category.color }}
             />
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground capitalize">
               {category.name}
               <span className="ml-1 text-muted-foreground">
                 ${category.amount.toLocaleString()}

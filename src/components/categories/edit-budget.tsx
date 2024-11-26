@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -36,6 +36,8 @@ import {
   Heart,
   MoreHorizontal,
 } from "lucide-react";
+import { updateCategoryBudget } from "@/actions/budgets/update-category-budget";
+import { getCategories } from "@/actions/categories/get-categories";
 
 const budgetSchema = z.object({
   type: z.enum(
@@ -53,9 +55,6 @@ const budgetSchema = z.object({
     }
   ),
   monthlyLimit: z.string().min(1, "Monthly limit is required"),
-  dailyTarget: z.string().min(1, "Daily target is required"),
-  notifications: z.boolean().default(true),
-  rollover: z.boolean().default(false),
   description: z.string().optional(),
 });
 
@@ -117,14 +116,22 @@ export function EditBudgetComponent() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      getCategories().then((result) => {
+        if (result.success) {
+          setCategories(result.categories);
+        }
+      });
+    }
+  }, [open]);
 
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),
     defaultValues: {
       monthlyLimit: "",
-      dailyTarget: "",
-      notifications: true,
-      rollover: false,
       description: "",
     },
   });
@@ -132,8 +139,30 @@ export function EditBudgetComponent() {
   async function onSubmit(data: BudgetFormValues) {
     try {
       setIsLoading(true);
-      // Here you would typically call your server action
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const category = categories.find((cat) => cat.name === data.type);
+      if (!category) {
+        throw new Error("Category not found");
+      }
+
+      const result = await updateCategoryBudget({
+        categoryId: category.id,
+        monthlyLimit: data.monthlyLimit,
+        description: data.description,
+      });
+
+      if (!result.success) {
+        if (Array.isArray(result.error)) {
+          result.error.forEach((error) => {
+            form.setError(error.path[0] as any, {
+              message: error.message,
+            });
+          });
+          toast.error("Please check the form for errors");
+          return;
+        }
+        throw new Error(result.error);
+      }
 
       toast.success("Budget updated successfully!");
       setOpen(false);
@@ -219,24 +248,6 @@ export function EditBudgetComponent() {
                       <Input
                         type="number"
                         placeholder="Enter monthly limit"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="dailyTarget"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Daily Target</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter daily target"
                         {...field}
                       />
                     </FormControl>
