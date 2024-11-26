@@ -100,8 +100,19 @@ export function AddAssetComponent() {
   async function onSubmit(data: AssetFormValues) {
     try {
       setIsLoading(true);
+      console.log("Submitting form data:", data);
 
-      const result = await createAsset(data);
+      const result = await createAsset({
+        ...data,
+        type: data.type as
+          | "REAL_ESTATE"
+          | "VEHICLE"
+          | "PRECIOUS_METALS"
+          | "OTHER",
+        value: data.value.toString(),
+      });
+
+      console.log("Create asset result:", result);
 
       if (!result.success) {
         if (Array.isArray(result.error)) {
@@ -121,6 +132,7 @@ export function AddAssetComponent() {
       form.reset();
       setStep(1);
     } catch (error) {
+      console.error("Error in onSubmit:", error);
       toast.error("Failed to add asset");
     } finally {
       setIsLoading(false);

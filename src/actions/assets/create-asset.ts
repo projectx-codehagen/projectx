@@ -20,26 +20,15 @@ const createAssetSchema = z.object({
 
 export async function createAsset(input: z.infer<typeof createAssetSchema>) {
   try {
-    console.log("Starting asset creation process");
+    console.log("Starting asset creation with input:", input);
 
     const { userId } = await auth();
     if (!userId) {
       throw new Error("Unauthorized: No user found");
     }
 
-    // Get user's active workspace
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        workspace: true,
-      },
-    });
-
-    if (!user?.workspace) {
-      throw new Error("No workspace found");
-    }
-
     const validatedFields = createAssetSchema.parse(input);
+    console.log("Validated fields:", validatedFields);
 
     // Create the asset
     const asset = await prisma.asset.create({
@@ -58,8 +47,10 @@ export async function createAsset(input: z.infer<typeof createAssetSchema>) {
       },
     });
 
+    console.log("Created asset:", asset);
+
     // Create initial valuation
-    await prisma.assetValuation.create({
+    const valuation = await prisma.assetValuation.create({
       data: {
         value: parseFloat(validatedFields.value),
         date: new Date(),
@@ -67,8 +58,10 @@ export async function createAsset(input: z.infer<typeof createAssetSchema>) {
       },
     });
 
+    console.log("Created valuation:", valuation);
+
     // Create purchase transaction
-    await prisma.assetTransaction.create({
+    const transaction = await prisma.assetTransaction.create({
       data: {
         type: "PURCHASE",
         amount: parseFloat(validatedFields.value),
@@ -77,6 +70,8 @@ export async function createAsset(input: z.infer<typeof createAssetSchema>) {
         assetId: asset.id,
       },
     });
+
+    console.log("Created transaction:", transaction);
 
     revalidatePath("/assets");
     return { success: true, asset };

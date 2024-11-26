@@ -24,7 +24,7 @@ export async function createInvestment(
   input: z.infer<typeof createInvestmentSchema>
 ) {
   try {
-    console.log("Starting investment creation process");
+    console.log("Starting investment creation with input:", input);
 
     const { userId } = await auth();
     if (!userId) {
@@ -54,8 +54,10 @@ export async function createInvestment(
       },
     });
 
+    console.log("Created investment:", investment);
+
     // Create initial valuation
-    await prisma.investmentValuation.create({
+    const valuation = await prisma.investmentValuation.create({
       data: {
         value: amount,
         date: new Date(),
@@ -63,8 +65,10 @@ export async function createInvestment(
       },
     });
 
+    console.log("Created valuation:", valuation);
+
     // Create initial transaction
-    await prisma.investmentTransaction.create({
+    const transaction = await prisma.investmentTransaction.create({
       data: {
         type: "BUY",
         amount,
@@ -75,6 +79,8 @@ export async function createInvestment(
         investmentId: investment.id,
       },
     });
+
+    console.log("Created transaction:", transaction);
 
     revalidatePath("/investments");
     return { success: true, investment };

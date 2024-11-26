@@ -1,53 +1,35 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Apple,
-  ShoppingCart,
-  ComputerIcon as Windows,
-  Car,
-  ShoppingBag,
-  Chrome,
-} from "lucide-react";
+import { BarChart2, Wallet2, LineChart, Briefcase } from "lucide-react";
 
-const positions = [
-  {
-    icon: Apple,
-    name: "Apple Inc.",
-    value: 150.0,
-    change: "+2.4%",
-  },
-  {
-    icon: ShoppingCart,
-    name: "Walmart Inc",
-    value: 150.0,
-    change: "+1.2%",
-  },
-  {
-    icon: Windows,
-    name: "Microsoft Corp.",
-    value: 250.0,
-    change: "+3.8%",
-  },
-  {
-    icon: Car,
-    name: "Tesla Inc.",
-    value: 300.0,
-    change: "-2.1%",
-  },
-  {
-    icon: ShoppingBag,
-    name: "Amazon.Com Inc.",
-    value: 320.0,
-    change: "+4.2%",
-  },
-  {
-    icon: Chrome,
-    name: "Alphabet Inc.",
-    value: 280.0,
-    change: "+1.8%",
-  },
-];
+interface PositionsTableProps {
+  data?: {
+    id: string;
+    type: string;
+    amount: number;
+    shares: number | null;
+    price: number;
+    date: Date;
+    description: string;
+    investment: {
+      id: string;
+      name: string;
+      type: string;
+      amount: number;
+      shares: number | null;
+      purchasePrice: number | null;
+      currentPrice: number | null;
+    };
+  }[];
+}
 
-export function PositionsTable() {
+const iconMap = {
+  STOCKS: BarChart2,
+  CRYPTO: Wallet2,
+  ETF: LineChart,
+  OTHER: Briefcase,
+};
+
+export function PositionsTable({ data = [] }: PositionsTableProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -55,35 +37,46 @@ export function PositionsTable() {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {positions.map((position) => (
-            <div
-              key={position.name}
-              className="flex items-center justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="rounded-full bg-muted p-2">
-                  <position.icon className="h-4 w-4 text-muted-foreground" />
+          {data.map((position) => {
+            const Icon =
+              iconMap[position.investment.type as keyof typeof iconMap] ||
+              Briefcase;
+            const showShares = position.shares !== null;
+
+            return (
+              <div
+                key={position.id}
+                className="flex items-center justify-between"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="rounded-full bg-muted p-2">
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {position.investment.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {showShares &&
+                        `${position.shares} shares @ $${position.price}`}
+                      {!showShares && position.description}
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {position.name}
+                <div className="text-right">
+                  <p className="text-sm font-medium">
+                    ${position.amount.toLocaleString()}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    ${position.value.toLocaleString()}
+                    {new Date(position.date).toLocaleDateString([], {
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </p>
                 </div>
               </div>
-              <div
-                className={`text-sm ${
-                  position.change.startsWith("+")
-                    ? "text-green-500"
-                    : "text-destructive"
-                }`}
-              >
-                {position.change}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

@@ -20,124 +20,132 @@ export interface Stock {
   price: number;
   marketCap: string;
   volume: string;
-  pe: number;
+  pe: string | number;
   weekRange: {
     low: number;
     high: number;
   };
 }
 
-const stocks: Stock[] = [
+const placeholderInvestments: Stock[] = [
   {
-    symbol: "DIS",
-    name: "Disney",
-    change: "+12%",
+    symbol: "STOCKS",
+    name: "Stocks",
+    change: "+2.5%",
     data: [40, 35, 45, 30, 35, 40],
     trend: "up",
     price: 156.34,
-    marketCap: "286.5B",
-    volume: "8.2M",
-    pe: 21.5,
-    weekRange: { low: 132.45, high: 178.89 },
+    marketCap: "$2.8T",
+    volume: "82.2M",
+    pe: 28.2,
+    weekRange: { low: 135.2, high: 178.4 },
   },
   {
-    symbol: "AAPL",
-    name: "Apple",
-    change: "-8%",
-    data: [45, 40, 35, 30, 25, 20],
-    trend: "down",
+    symbol: "CRYPTO",
+    name: "Crypto",
+    change: "+1.8%",
+    data: [45, 40, 35, 30, 45, 40],
+    trend: "up",
     price: 178.92,
-    marketCap: "2.78T",
-    volume: "12.4M",
-    pe: 28.7,
-    weekRange: { low: 155.98, high: 198.23 },
+    marketCap: "$980B",
+    volume: "24.5B",
+    pe: "N/A",
+    weekRange: { low: 25800, high: 35400 },
   },
   {
-    symbol: "GOOG",
-    name: "Alphabet",
-    change: "+15%",
+    symbol: "ETF",
+    name: "ETF",
+    change: "+1.2%",
     data: [20, 25, 35, 45, 40, 50],
     trend: "up",
     price: 142.56,
-    marketCap: "1.82T",
-    volume: "9.8M",
-    pe: 25.3,
-    weekRange: { low: 122.23, high: 155.89 },
+    marketCap: "$450B",
+    volume: "45.1M",
+    pe: 22.4,
+    weekRange: { low: 380.5, high: 425.8 },
   },
   {
-    symbol: "META",
-    name: "Meta",
-    change: "-5%",
+    symbol: "OTHER",
+    name: "Other",
+    change: "+0.8%",
     data: [40, 35, 45, 35, 40, 35],
-    trend: "down",
-    price: 334.92,
-    marketCap: "865.2B",
-    volume: "7.5M",
-    pe: 32.1,
-    weekRange: { low: 289.45, high: 378.12 },
-  },
-  {
-    symbol: "AMZN",
-    name: "Amazon",
-    change: "+9%",
-    data: [45, 40, 35, 30, 45, 40],
     trend: "up",
-    price: 145.24,
-    marketCap: "1.52T",
-    volume: "10.1M",
-    pe: 42.8,
-    weekRange: { low: 123.45, high: 168.92 },
+    price: 334.92,
+    marketCap: "Various",
+    volume: "Various",
+    pe: "Various",
+    weekRange: { low: 0, high: 0 },
   },
 ];
 
-export function StockCards() {
+interface StockCardsProps {
+  data?: {
+    name: string;
+    originalName: string;
+    value: number;
+    percentage: number;
+    progress: string;
+  }[];
+}
+
+export function StockCards({ data = [] }: StockCardsProps) {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-        {stocks.map((stock) => (
-          <Card
-            key={stock.symbol}
-            className="cursor-pointer transition-colors hover:bg-muted/50"
-            onClick={() => setSelectedStock(stock)}
-          >
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                <div className="text-sm text-muted-foreground">
-                  {stock.symbol}
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {placeholderInvestments.map((stock) => {
+          const investmentData = data?.find(
+            (d) => d.originalName === stock.symbol
+          );
+
+          return (
+            <Card
+              key={stock.symbol}
+              className="cursor-pointer transition-colors hover:bg-muted/50"
+              onClick={() => setSelectedStock(stock)}
+            >
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div className="text-sm text-muted-foreground">
+                    {stock.symbol}
+                  </div>
+                  <div className="font-medium">
+                    {investmentData ? investmentData.name : stock.name}
+                  </div>
+                  <div className="h-[60px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={stock.data.map((value) => ({ value }))}>
+                        <Line
+                          type="monotone"
+                          dataKey="value"
+                          stroke={
+                            stock.trend === "up"
+                              ? "hsl(var(--chart-2))"
+                              : "hsl(var(--destructive))"
+                          }
+                          strokeWidth={1.5}
+                          dot={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div
+                    className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
+                      stock.trend === "up"
+                        ? "bg-green-500/10 text-green-500"
+                        : "bg-destructive/10 text-destructive"
+                    }`}
+                  >
+                    {investmentData
+                      ? `$${(investmentData.value / 1000).toFixed(0)}K`
+                      : "$0.00"}
+                  </div>
                 </div>
-                <div className="font-medium">{stock.name}</div>
-                <div className="h-[60px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={stock.data.map((value) => ({ value }))}>
-                      <Line
-                        type="monotone"
-                        dataKey="value"
-                        stroke={
-                          stock.trend === "up"
-                            ? "hsl(var(--chart-2))"
-                            : "hsl(var(--destructive))"
-                        }
-                        strokeWidth={1.5}
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                <div
-                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
-                    stock.trend === "up"
-                      ? "bg-green-500/10 text-green-500"
-                      : "bg-destructive/10 text-destructive"
-                  }`}
-                >
-                  {stock.change}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <Sheet
