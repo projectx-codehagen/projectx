@@ -1,45 +1,83 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { TrendingDown, TrendingUp, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-const summary = [
-  {
-    title: "Monthly Budget",
-    amount: 3200,
-    spent: 2350,
-    icon: TrendingDown,
-    change: "-$850 (26.5% remaining)",
-    progress: 73.5,
-    description: "of budget used this month",
-  },
-  {
-    title: "Biggest Category",
-    amount: 1500,
-    category: "Housing",
-    icon: TrendingUp,
-    change: "+$50 vs last month",
-    progress: 46.8,
-    description: "of total spending",
-  },
-  {
-    title: "Daily Average",
-    amount: 78.33,
-    icon: AlertCircle,
-    change: "-$12 vs last month",
-    progress: 85,
-    description: "of daily target",
-  },
-];
+interface BudgetSummaryProps {
+  data: {
+    totalSpending: number;
+    categoryBreakdown: {
+      name: string;
+      amount: number;
+      budget: number;
+      percentage: number;
+      progress: number;
+    }[];
+  };
+}
 
-export function BudgetSummary() {
+export function BudgetSummary({ data }: BudgetSummaryProps) {
+  // Calculate total budget
+  const totalBudget = data.categoryBreakdown.reduce(
+    (sum, cat) => sum + cat.budget,
+    0
+  );
+  const totalProgress = (data.totalSpending / totalBudget) * 100;
+
+  // Find biggest category
+  const biggestCategory = data.categoryBreakdown.reduce(
+    (max, cat) => (cat.amount > (max?.amount || 0) ? cat : max),
+    data.categoryBreakdown[0]
+  );
+
+  // Calculate daily average
+  const today = new Date();
+  const daysInMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    0
+  ).getDate();
+  const dailyAverage = data.totalSpending / today.getDate();
+  const dailyTarget = totalBudget / daysInMonth;
+  const dailyProgress = (dailyAverage / dailyTarget) * 100;
+
+  const summary = [
+    {
+      title: "Monthly Budget",
+      amount: data.totalSpending,
+      total: totalBudget,
+      icon: TrendingDown,
+      change: `-$${(totalBudget - data.totalSpending).toLocaleString()} (${(
+        100 - totalProgress
+      ).toFixed(1)}% remaining)`,
+      progress: totalProgress,
+      description: "of budget used this month",
+    },
+    {
+      title: "Biggest Category",
+      amount: biggestCategory?.amount || 0,
+      category: biggestCategory?.name || "None",
+      icon: TrendingUp,
+      change: `${biggestCategory?.percentage.toFixed(1)}% of total spending`,
+      progress: biggestCategory?.progress || 0,
+      description: "of category budget",
+    },
+    {
+      title: "Daily Average",
+      amount: dailyAverage,
+      icon: AlertCircle,
+      change: `${dailyProgress > 100 ? "+" : "-"}$${Math.abs(
+        dailyAverage - dailyTarget
+      ).toFixed(0)} vs target`,
+      progress: dailyProgress,
+      description: "of daily target",
+    },
+  ];
+
   return (
     <div className="grid auto-rows-min gap-4 md:grid-cols-3">
       {summary.map((item) => (
         <Card key={item.title}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="p-4">
             <div className="flex flex-col gap-2">
               <div>
                 <div className="text-2xl font-bold">
@@ -47,13 +85,23 @@ export function BudgetSummary() {
                   <span className="text-xl">.00</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-green-500">{item.change}</span>
+                  <span
+                    className={
+                      item.progress > 100
+                        ? "text-destructive"
+                        : "text-green-500"
+                    }
+                  >
+                    {item.change}
+                  </span>
                 </p>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Progress</span>
-                  <span className="font-medium">{item.progress}%</span>
+                  <span className="font-medium">
+                    {item.progress.toFixed(1)}%
+                  </span>
                 </div>
                 <Progress value={item.progress} className="h-2" />
               </div>
