@@ -24,8 +24,6 @@ export async function createInvestment(
   input: z.infer<typeof createInvestmentSchema>
 ) {
   try {
-    console.log("Starting investment creation with input:", input);
-
     const { userId } = await auth();
     if (!userId) {
       throw new Error("Unauthorized: No user found");
@@ -54,10 +52,8 @@ export async function createInvestment(
       },
     });
 
-    console.log("Created investment:", investment);
-
     // Create initial valuation
-    const valuation = await prisma.investmentValuation.create({
+    await prisma.investmentValuation.create({
       data: {
         value: amount,
         date: new Date(),
@@ -65,10 +61,8 @@ export async function createInvestment(
       },
     });
 
-    console.log("Created valuation:", valuation);
-
     // Create initial transaction
-    const transaction = await prisma.investmentTransaction.create({
+    await prisma.investmentTransaction.create({
       data: {
         type: "BUY",
         amount,
@@ -80,12 +74,9 @@ export async function createInvestment(
       },
     });
 
-    console.log("Created transaction:", transaction);
-
     revalidatePath("/investments");
     return { success: true, investment };
   } catch (error) {
-    console.error("Error in createInvestment:", error);
     if (error instanceof z.ZodError) {
       return { success: false, error: error.errors };
     }

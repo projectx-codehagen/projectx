@@ -74,8 +74,6 @@ export async function getInvestmentsOverview(): Promise<{
       },
     });
 
-    console.log("Found investments:", investments);
-
     // Calculate totals
     const totalInvestments = investments.reduce(
       (sum, investment) => sum + investment.amount.toNumber(),
@@ -182,7 +180,7 @@ export async function getInvestmentsOverview(): Promise<{
       }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    const result = {
+    return {
       success: true,
       data: {
         totalInvestments,
@@ -193,11 +191,7 @@ export async function getInvestmentsOverview(): Promise<{
         monthlyTrend: trend,
       },
     };
-
-    console.log("Returning overview:", result);
-    return result;
   } catch (error) {
-    console.error("Error in getInvestmentsOverview:", error);
     return {
       success: false,
       error: "Failed to fetch investments overview",
