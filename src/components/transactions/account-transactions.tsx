@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Tag } from "lucide-react";
+import { MoreHorizontal, Tag, CheckCircle, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { CategorySelect } from "@/components/categories/category-select";
@@ -127,7 +127,8 @@ function renderCategoryWithIcon(
     amount: number;
     categoryValidated?: boolean;
   },
-  onApproveCategory: (transactionId: string, categoryId: string) => void
+  onApproveCategory: (transactionId: string, categoryId: string) => void,
+  setEditingTransaction: (id: string | null) => void
 ) {
   const suggestedCategory = !transaction.categoryValidated
     ? suggestCategory(
@@ -143,21 +144,10 @@ function renderCategoryWithIcon(
       ? CATEGORIZATION_RULES.find((r) => r.id === suggestedCategory.categoryId)
       : null);
 
-  if (!effectiveCategory) {
-    return (
-      <div className="flex items-center gap-2">
-        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-        <span className="text-muted-foreground">Uncategorized</span>
-      </div>
-    );
-  }
-
   const IconComponent =
-    categoryIcons[effectiveCategory.name.toUpperCase()] || ShoppingCart;
-  const formattedName = effectiveCategory.name
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+    effectiveCategory && categoryIcons[effectiveCategory.name.toUpperCase()]
+      ? categoryIcons[effectiveCategory.name.toUpperCase()]
+      : ShoppingCart;
 
   return (
     <div className="flex items-center gap-2">
@@ -165,7 +155,7 @@ function renderCategoryWithIcon(
         <Badge
           variant="outline"
           className={cn(
-            "mr-2 cursor-pointer",
+            "mr-2 cursor-pointer transition-all hover:scale-105",
             getConfidenceBadgeStyles(suggestedCategory.confidence)
           )}
           onClick={(e) => {
@@ -173,11 +163,24 @@ function renderCategoryWithIcon(
             onApproveCategory(transaction.id, suggestedCategory.categoryId);
           }}
         >
-          {getConfidenceLabel(suggestedCategory.confidence)}
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Accept Suggestion
         </Badge>
       )}
-      <IconComponent className="h-4 w-4 text-muted-foreground" />
-      <span>{formattedName}</span>
+      <div className="flex items-center gap-2 cursor-pointer hover:text-primary">
+        <IconComponent className="h-4 w-4 text-muted-foreground" />
+        <span>
+          {effectiveCategory
+            ? effectiveCategory.name
+                .split(" ")
+                .map(
+                  (word) =>
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                )
+                .join(" ")
+            : "Uncategorized"}
+        </span>
+      </div>
     </div>
   );
 }
@@ -255,7 +258,6 @@ export default function AccountTransactions({
                     <CategorySelect
                       onSelect={(newCategory) => {
                         handleCategoryUpdate(newCategory);
-                        setEditingTransaction(null);
                       }}
                       currentCategoryId={transaction.category?.id}
                     />
@@ -266,7 +268,8 @@ export default function AccountTransactions({
                     >
                       {renderCategoryWithIcon(
                         transaction,
-                        handleApproveCategory
+                        handleApproveCategory,
+                        setEditingTransaction
                       )}
                     </div>
                   )}

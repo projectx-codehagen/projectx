@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
+import { GoalType } from "@prisma/client";
 
 interface SavingsOverview {
   totalSavings: number;
@@ -10,7 +11,7 @@ interface SavingsOverview {
   savingsGoals: {
     id: string;
     name: string;
-    type: string;
+    type: GoalType;
     current: number;
     target: number;
     progress: number;
@@ -91,7 +92,7 @@ export async function getSavingsOverview(): Promise<{
     const monthlyChangePercentage =
       lastMonthTotal > 0 ? (monthlyChange / lastMonthTotal) * 100 : 0;
 
-    // Format goals data - convert all Decimal values to numbers
+    // Format goals data - convert all Decimal values to numbers and handle null values
     const formattedGoals = savingsGoals.map((goal) => ({
       id: goal.id,
       name: goal.name,
@@ -99,8 +100,8 @@ export async function getSavingsOverview(): Promise<{
       current: goal.current.toNumber(),
       target: goal.target.toNumber(),
       progress: (goal.current.toNumber() / goal.target.toNumber()) * 100,
-      deadline: goal.deadline,
-      description: goal.description,
+      deadline: goal.deadline || undefined,
+      description: goal.description || undefined,
     }));
 
     // Generate recommendations

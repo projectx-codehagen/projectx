@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
-import { ensureDefaultCategories } from "@/lib/utils/transaction-categorization";
+import { CATEGORIES } from "@/lib/config/categories";
 
 interface Category {
   id: string;
@@ -19,21 +19,19 @@ export async function getCategories(): Promise<{
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    const categories = await prisma.category.findMany({
-      where: { userId },
-      select: {
-        id: true,
-        name: true,
-        icon: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
+    // Ensure default categories exist in the database
+    const defaultCategories = await ensureDefaultCategories(userId);
+
+    // Map the categories to the expected format
+    const formattedCategories = CATEGORIES.map(category => ({
+      id: category.id,
+      name: category.name,
+      icon: category.id, // Using the id as icon identifier
+    }));
 
     return {
       success: true,
-      data: categories,
+      data: formattedCategories,
     };
   } catch (error) {
     console.error("Error fetching categories:", error);
@@ -42,6 +40,30 @@ export async function getCategories(): Promise<{
       error: "Failed to fetch categories",
     };
   }
+}
+
+async function ensureDefaultCategories(userId: string) {
+  const defaultCategories = await Promise.all(
+    CATEGORIES.map(async (category) => {
+      const dbCategory = await prisma.category.upsert({
+        where: {
+          name_userId: {
+            name: category.name,
+            userId,
+          },
+        },
+        update: {},
+        create: {
+          name: category.name,
+          icon: category.id,
+          userId,
+        },
+      });
+      return { ...dbCategory, ruleId: category.id };
+    })
+  );
+
+  return defaultCategories;
 }
 
 export async function updateTransactionCategory(

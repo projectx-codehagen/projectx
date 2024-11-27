@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TotalAssetsChart } from "@/components/assets/total-assets-chart";
+import { BankAccountChart } from "@/components/banking/bank-account-chart";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 
 interface BankAccountOverviewProps {
@@ -50,7 +50,7 @@ export default function BankAccountOverview({
               </p>
             </div>
             <div className="h-[180px]">
-              <TotalAssetsChart data={data.monthlyTrend} type="total" />
+              <BankAccountChart data={data.monthlyTrend} type="total" />
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <TrendingUp className="h-3.5 w-3.5 text-green-500" />
@@ -79,7 +79,7 @@ export default function BankAccountOverview({
               </p>
             </div>
             <div className="h-[180px]">
-              <TotalAssetsChart data={data.monthlyTrend} type="checking" />
+              <BankAccountChart data={data.monthlyTrend} type="checking" />
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <TrendingDown className="h-3.5 w-3.5 text-green-500" />
@@ -108,7 +108,7 @@ export default function BankAccountOverview({
               </p>
             </div>
             <div className="h-[180px]">
-              <TotalAssetsChart data={data.monthlyTrend} type="savings" />
+              <BankAccountChart data={data.monthlyTrend} type="savings" />
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Wallet className="h-3.5 w-3.5 text-green-500" />

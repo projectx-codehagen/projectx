@@ -11,7 +11,6 @@ export default async function BankingPage() {
   if (!user) redirect("/sign-in");
 
   const { success, data, error } = await getBankingOverview();
-  console.log(data);
 
   if (!success || !data || data.bankAccounts.length === 0) {
     return (

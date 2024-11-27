@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
+import { AccountType } from "@prisma/client";
 
 interface BankingOverview {
   totalBalance: number;
@@ -10,7 +11,7 @@ interface BankingOverview {
   bankAccounts: {
     id: string;
     name: string;
-    type: string;
+    type: AccountType;
     balance: number;
     percentage: number;
     accountNumber?: string;
@@ -112,7 +113,7 @@ export async function getBankingOverview(): Promise<{
       accountNumber: account.originalId || undefined,
       lastTransaction: account.Transaction[0]
         ? {
-            amount: account.Transaction[0].amount,
+            amount: Number(account.Transaction[0].amount),
             date: account.Transaction[0].date,
             description: account.Transaction[0].description,
           }
