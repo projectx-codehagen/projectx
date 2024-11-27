@@ -3,12 +3,12 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@prisma/client";
+import { Prisma, AccountType } from "@prisma/client";
 
 interface CreateAccountInput {
   name: string;
-  accountNumber: string;
   bankName: string;
+  accountType: AccountType;
   currency: string;
   balance?: string;
   csvData: {
@@ -37,12 +37,11 @@ export async function createNewAccount(input: CreateAccountInput) {
       },
     });
 
-    // Create the account
+    // Create the account with the specified account type
     const account = await prisma.bankAccount.create({
       data: {
         name: input.name,
-        accountType: "BANK",
-        originalId: input.accountNumber,
+        accountType: input.accountType,
         originalPayload: {
           bankName: input.bankName,
           currency: input.currency,

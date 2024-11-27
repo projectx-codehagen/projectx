@@ -414,8 +414,9 @@ model SavingsProgress {
 
 enum AccountType {
     BANK
-    CRYPTO
+    SAVINGS
     INVESTMENT
+    CRYPTO
 }
 
 enum BalanceType {

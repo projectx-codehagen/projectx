@@ -9,6 +9,7 @@ import {
   Wallet,
   MoreHorizontal,
   Loader2,
+  LucideIcon,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
@@ -50,6 +51,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { AccountType } from "@prisma/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface BankAccountSelectorProps {
   data: {
@@ -87,7 +96,7 @@ function getInitials(name: string): string {
 const updateBankAccountSchema = z.object({
   id: z.string().min(1, "Account ID is required"),
   name: z.string().min(2, "Account name must be at least 2 characters."),
-  accountType: z.enum(["BANK", "CRYPTO", "INVESTMENT"]),
+  accountType: z.enum(["BANK", "SAVINGS", "INVESTMENT", "CRYPTO"]),
   description: z.string().optional(),
 });
 
@@ -99,6 +108,17 @@ function formatAccountDisplay(name: string, accountNumber: string) {
     name,
     displayNumber: `****${lastFour}`,
   };
+}
+
+// Add a helper function to get the appropriate icon
+function getAccountIcon(type: AccountType): LucideIcon {
+  switch (type) {
+    case AccountType.SAVINGS:
+      return Wallet;
+    case AccountType.BANK:
+    default:
+      return Building2;
+  }
 }
 
 export default function BankAccountSelector({
@@ -226,8 +246,7 @@ export default function BankAccountSelector({
         <CardContent>
           <div className="grid gap-4">
             {data.bankAccounts.map((account) => {
-              const Icon =
-                iconMap[account.type as keyof typeof iconMap] || Building2;
+              const Icon = getAccountIcon(account.type as AccountType);
               return (
                 <div
                   key={account.id}
@@ -415,14 +434,30 @@ export default function BankAccountSelector({
                   <FormItem>
                     <FormLabel>Account Type</FormLabel>
                     <FormControl>
-                      <select
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        {...field}
+                      <Select
+                        value={field.value}
+                        onValueChange={(value: AccountType) =>
+                          field.onChange(value)
+                        }
                       >
-                        <option value="BANK">Bank</option>
-                        <option value="CRYPTO">Crypto</option>
-                        <option value="INVESTMENT">Investment</option>
-                      </select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select account type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={AccountType.BANK}>
+                            Checking Account
+                          </SelectItem>
+                          <SelectItem value={AccountType.SAVINGS}>
+                            Savings Account
+                          </SelectItem>
+                          <SelectItem value={AccountType.INVESTMENT}>
+                            Investment Account
+                          </SelectItem>
+                          <SelectItem value={AccountType.CRYPTO}>
+                            Crypto Account
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

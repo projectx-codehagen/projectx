@@ -8,21 +8,21 @@ export function suggestCategory(
   amount: number,
   type: "CREDIT" | "DEBIT"
 ) {
-  // If it's a credit, it might be income
-  if (type === "CREDIT") {
-    return {
-      categoryId: "income",
-      confidence: 0.8,
-    };
-  }
-
-  const suggestedId = suggestCategoryForTransaction(description);
+  const suggestedId = suggestCategoryForTransaction(description, type);
   const category = CATEGORIES.find((cat) => cat.id === suggestedId);
 
   if (!category) {
     return {
       categoryId: "other",
       confidence: 0.3,
+    };
+  }
+
+  // Higher confidence for income transactions
+  if (type === "CREDIT" && category.type === "CREDIT") {
+    return {
+      categoryId: category.id,
+      confidence: 0.9,
     };
   }
 

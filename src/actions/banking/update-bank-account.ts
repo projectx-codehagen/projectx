@@ -7,42 +7,36 @@ import { AccountType } from "@prisma/client";
 import { z } from "zod";
 import { updateBankAccountSchema } from "@/schemas/bank-account-schema";
 
-export async function updateBankAccount(
-  input: z.infer<typeof updateBankAccountSchema>
-) {
+interface UpdateBankAccountInput {
+  id: string;
+  name: string;
+  accountType: AccountType;
+  description?: string;
+}
+
+export async function updateBankAccount(input: UpdateBankAccountInput) {
   try {
     const { userId } = await auth();
-    if (!userId) {
-      throw new Error("Unauthorized: No user found");
-    }
+    if (!userId) throw new Error("Unauthorized");
 
-    const validatedFields = updateBankAccountSchema.parse(input);
-
-    // Verify account ownership
-    const existingAccount = await prisma.bankAccount.findFirst({
-      where: {
-        id: validatedFields.id,
-        userId,
-      },
+    const existingAccount = await prisma.bankAccount.findUnique({
+      where: { id: input.id },
     });
 
-    if (!existingAccount) {
-      throw new Error("Account not found or unauthorized");
-    }
-
-    // Get existing payload or create new one
     const currentPayload =
-      (existingAccount.originalPayload as Record<string, unknown>) || {};
+      (existingAccount?.originalPayload as Record<string, unknown>) || {};
 
-    // Update the account
     const account = await prisma.bankAccount.update({
-      where: { id: validatedFields.id },
+      where: {
+        id: input.id,
+        userId,
+      },
       data: {
-        name: validatedFields.name,
-        accountType: validatedFields.accountType as AccountType,
+        name: input.name,
+        accountType: input.accountType,
         originalPayload: {
           ...currentPayload,
-          description: validatedFields.description,
+          description: input.description,
           updatedAt: new Date(),
         },
       },
@@ -52,15 +46,6 @@ export async function updateBankAccount(
     return { success: true, account };
   } catch (error) {
     console.error("Error in updateBankAccount:", error);
-    if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors };
-    }
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return {
-      success: false,
-      error: "An unexpected error occurred while updating the account",
-    };
+    return { success: false, error: "Failed to update account" };
   }
 }

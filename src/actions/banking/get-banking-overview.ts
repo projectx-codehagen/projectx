@@ -159,7 +159,6 @@ export async function getBankingOverview(): Promise<{
 }
 
 async function calculateMonthlyTrend(bankAccounts: any[]) {
-  // Calculate trend data for the last 12 months
   const trend = [];
   const now = new Date();
 
@@ -186,7 +185,7 @@ async function calculateMonthlyTrend(bankAccounts: any[]) {
         acc.total += amount;
         if (balance.bankAccount?.accountType === "BANK") {
           acc.checking += amount;
-        } else {
+        } else if (balance.bankAccount?.accountType === "SAVINGS") {
           acc.savings += amount;
         }
         return acc;
