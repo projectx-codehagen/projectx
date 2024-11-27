@@ -91,7 +91,7 @@ export async function getSavingsOverview(): Promise<{
     const monthlyChangePercentage =
       lastMonthTotal > 0 ? (monthlyChange / lastMonthTotal) * 100 : 0;
 
-    // Format goals data
+    // Format goals data - convert all Decimal values to numbers
     const formattedGoals = savingsGoals.map((goal) => ({
       id: goal.id,
       name: goal.name,

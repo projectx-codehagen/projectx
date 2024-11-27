@@ -3,9 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { AccountType } from "@prisma/client";
-import { processCSVTransactions } from "./process-csv-transactions";
-import { seedCurrencies } from "../currency/seed-currencies";
+import { Prisma } from "@prisma/client";
 
 interface CreateAccountInput {
   name: string;
@@ -13,91 +11,140 @@ interface CreateAccountInput {
   bankName: string;
   currency: string;
   balance?: string;
-  csvData?: {
+  csvData: {
     date: number;
     description: number;
     amount: number;
   };
-  csvContent?: string;
+  csvContent: string;
 }
 
 export async function createNewAccount(input: CreateAccountInput) {
   try {
-    console.log("Starting account creation process");
-
-    // Ensure currencies exist in the database
-    await seedCurrencies();
-
-    // Verify the currency exists
-    const currency = await prisma.currency.findUnique({
-      where: { iso: input.currency },
-    });
-
-    if (!currency) {
-      throw new Error(`Currency ${input.currency} is not supported`);
-    }
-
     const { userId } = await auth();
     if (!userId) {
-      throw new Error("Unauthorized: No user found");
+      throw new Error("Unauthorized");
     }
 
-    // Get user's active workspace
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        workspace: true,
+    // Create or connect to currency
+    const currency = await prisma.currency.upsert({
+      where: { iso: input.currency },
+      update: {},
+      create: {
+        iso: input.currency,
+        symbol: getCurrencySymbol(input.currency),
+        name: getCurrencyName(input.currency),
       },
     });
-
-    if (!user?.workspace) {
-      throw new Error("No workspace found");
-    }
-
-    const workspaceId = user.workspace.id;
 
     // Create the account
     const account = await prisma.bankAccount.create({
       data: {
         name: input.name,
-        initialAmount: 0,
-        accountType: AccountType.BANK,
-        workspaceId,
-        userId,
+        accountType: "BANK",
         originalId: input.accountNumber,
-        orgId: null,
         originalPayload: {
           bankName: input.bankName,
           currency: input.currency,
         },
+        userId,
       },
     });
 
-    // Process CSV content if provided
-    if (input.csvData && input.csvContent) {
-      console.log("Processing CSV content...");
-      const result = await processCSVTransactions({
-        accountId: account.id,
-        currencyIso: input.currency,
-        csvContent: input.csvContent,
-        mapping: input.csvData,
-      });
+    // Create initial balance record
+    const initialBalance = new Prisma.Decimal(input.balance || "0");
+    await prisma.balance.create({
+      data: {
+        amount: initialBalance.toNumber(),
+        date: new Date(),
+        bankAccount: {
+          connect: {
+            id: account.id,
+          },
+        },
+        currency: {
+          connect: {
+            iso: input.currency,
+          },
+        },
+      },
+    });
 
-      if (!result.success) {
-        throw new Error(`Failed to process CSV: ${result.error}`);
+    // Process CSV transactions
+    const lines = input.csvContent.split("\n");
+    const headers = lines[0].split(",");
+    const transactions = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].split(",");
+      if (line.length === headers.length) {
+        const amount = new Prisma.Decimal(
+          line[input.csvData.amount].replace(/[^-0-9.]/g, "")
+        );
+        transactions.push({
+          date: new Date(line[input.csvData.date]),
+          description: line[input.csvData.description].trim(),
+          amount: amount.toNumber(),
+          accountId: account.id,
+          currencyIso: input.currency,
+          type: amount.isNegative() ? "DEBIT" : "CREDIT",
+        });
       }
     }
 
-    revalidatePath("/dashboard");
+    // Create transactions in batches
+    await prisma.transaction.createMany({
+      data: transactions,
+    });
+
+    // Update account balance based on transactions
+    const totalTransactions = transactions.reduce(
+      (sum, tx) => sum.plus(tx.amount),
+      initialBalance
+    );
+
+    await prisma.balance.create({
+      data: {
+        amount: totalTransactions.toNumber(),
+        date: new Date(),
+        bankAccount: {
+          connect: {
+            id: account.id,
+          },
+        },
+        currency: {
+          connect: {
+            iso: input.currency,
+          },
+        },
+      },
+    });
+
+    revalidatePath("/banking");
     return { success: true, account };
   } catch (error) {
     console.error("Error in createNewAccount:", error);
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return {
-      success: false,
-      error: "An unexpected error occurred while creating the account",
-    };
+    return { success: false, error: "Failed to create account" };
   }
+}
+
+// Helper functions for currency information
+function getCurrencyName(iso: string): string {
+  const currencyNames: Record<string, string> = {
+    USD: "US Dollar",
+    EUR: "Euro",
+    GBP: "British Pound",
+    NOK: "Norwegian Krone",
+  };
+  return currencyNames[iso] || iso;
+}
+
+function getCurrencySymbol(iso: string): string {
+  const currencySymbols: Record<string, string> = {
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    NOK: "kr",
+  };
+  return currencySymbols[iso] || iso;
 }

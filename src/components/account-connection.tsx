@@ -174,6 +174,7 @@ export function AddBankAccountComponent({
           accountNumber: accountDetails.accountNumber,
           bankName: accountDetails.bankName,
           currency: accountDetails.currency,
+          balance: accountDetails.balance,
           csvData: {
             date: columnMapping.date!,
             description: columnMapping.description!,

@@ -95,7 +95,8 @@ model Balance {
 
 model Currency {
     iso         String        @id
-    symbol      String
+    symbol      String        @default("$")
+    name        String        @default("US Dollar")
     numericCode Int?
     Balance     Balance[]
     Transaction Transaction[]
@@ -162,6 +163,7 @@ model Transaction {
     asset           Asset?       @relation(fields: [assetId], references: [id], onDelete: Cascade)
     category        Category?    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
     currency        Currency     @relation(fields: [currencyIso], references: [iso], onDelete: Cascade)
+    type            String
 }
 
 model Category {
