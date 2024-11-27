@@ -62,7 +62,6 @@ const updateGoalSchema = z.object({
     message: "Goal name must be at least 2 characters.",
   }),
   target: z.string().min(1, "Target amount is required"),
-  deadline: z.date().optional(),
   description: z.string().optional(),
 });
 
@@ -102,43 +101,76 @@ export function ManageSavingsGoals({ goals }: ManageSavingsGoalsProps) {
 
   const form = useForm<z.infer<typeof updateGoalSchema>>({
     resolver: zodResolver(updateGoalSchema),
+    defaultValues: {
+      name: "",
+      target: "",
+      description: "",
+    },
   });
+
+  function handleGoalSelect(goal: (typeof goals)[0]) {
+    setSelectedGoal(goal);
+    form.reset({
+      id: goal.id,
+      name: goal.name,
+      target: goal.target.toString(),
+      description: goal.description ?? "",
+    });
+  }
 
   async function handleDelete(goalId: string) {
     try {
       setIsLoading(true);
+      console.log("Deleting goal with ID:", goalId);
+
       const result = await deleteSavingsGoal(goalId);
+      console.log("Delete result:", result);
 
       if (!result.success) {
-        throw new Error(result.error);
+        throw new Error(result.error as string);
       }
 
       toast.success("Goal deleted successfully!");
+      setSelectedGoal(null);
       setOpen(false);
     } catch (error) {
-      toast.error("Failed to delete goal");
+      console.error("Error deleting goal:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete goal"
+      );
     } finally {
       setIsLoading(false);
     }
   }
 
   async function onSubmit(data: z.infer<typeof updateGoalSchema>) {
+    if (!selectedGoal) return;
+
     try {
       setIsLoading(true);
+      console.log("Updating goal:", data);
+
       const result = await updateSavingsGoal({
-        ...data,
-        id: selectedGoal!.id,
+        id: selectedGoal.id,
+        name: data.name,
+        target: data.target,
+        description: data.description,
       });
+
+      console.log("Update result:", result);
 
       if (!result.success) {
         throw new Error(result.error as string);
       }
 
       toast.success("Goal updated successfully!");
+      setSelectedGoal(null);
       setOpen(false);
-      form.reset();
     } catch (error) {
-      toast.error("Failed to update goal");
+      console.error("Error updating goal:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update goal"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -168,15 +200,7 @@ export function ManageSavingsGoals({ goals }: ManageSavingsGoalsProps) {
                     ? "border-primary shadow-md"
                     : "hover:border-primary hover:shadow-sm"
                 }`}
-                onClick={() => {
-                  setSelectedGoal(goal);
-                  form.reset({
-                    name: goal.name,
-                    target: goal.target.toString(),
-                    deadline: goal.deadline,
-                    description: goal.description,
-                  });
-                }}
+                onClick={() => handleGoalSelect(goal)}
               >
                 <CardContent className="flex flex-col items-center text-center p-6">
                   <div key={`goal-icon-${goal.id}`}>
@@ -251,39 +275,16 @@ export function ManageSavingsGoals({ goals }: ManageSavingsGoalsProps) {
 
               <FormField
                 control={form.control}
-                name="deadline"
+                name="description"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Target Date (Optional)</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                  <FormItem>
+                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., Saving for a house down payment"
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -293,7 +294,7 @@ export function ManageSavingsGoals({ goals }: ManageSavingsGoalsProps) {
                 <Button
                   type="button"
                   variant="destructive"
-                  onClick={() => handleDelete(selectedGoal.id)}
+                  onClick={() => selectedGoal && handleDelete(selectedGoal.id)}
                   disabled={isLoading}
                 >
                   Delete Goal
@@ -307,7 +308,7 @@ export function ManageSavingsGoals({ goals }: ManageSavingsGoalsProps) {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isLoading}>
+                  <Button type="submit" disabled={isLoading || !selectedGoal}>
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

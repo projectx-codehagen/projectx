@@ -3,16 +3,17 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 export async function deleteSavingsGoal(goalId: string) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized: No user found" };
+      throw new Error("Unauthorized: No user found");
     }
 
     if (!goalId) {
-      return { success: false, error: "Goal ID is required" };
+      throw new Error("Goal ID is required");
     }
 
     // Verify goal ownership
@@ -21,13 +22,16 @@ export async function deleteSavingsGoal(goalId: string) {
         id: goalId,
         userId,
       },
+      include: {
+        progress: true,
+      },
     });
 
     if (!goal) {
-      return { success: false, error: "Goal not found or unauthorized" };
+      throw new Error("Goal not found or unauthorized");
     }
 
-    // Delete the goal (this will cascade delete progress entries)
+    // Delete the goal (cascade will handle progress entries)
     await prisma.savingsGoal.delete({
       where: { id: goalId },
     });
@@ -36,6 +40,9 @@ export async function deleteSavingsGoal(goalId: string) {
     return { success: true };
   } catch (error) {
     console.error("Error in deleteSavingsGoal:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
     return {
       success: false,
       error: "An unexpected error occurred while deleting the savings goal",

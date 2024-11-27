@@ -8,10 +8,14 @@ interface SavingsOverview {
   monthlyChange: number;
   monthlyChangePercentage: number;
   savingsGoals: {
+    id: string;
     name: string;
+    type: string;
     current: number;
     target: number;
     progress: number;
+    deadline?: Date;
+    description?: string;
   }[];
   monthlySavings: {
     date: string;
@@ -89,10 +93,14 @@ export async function getSavingsOverview(): Promise<{
 
     // Format goals data
     const formattedGoals = savingsGoals.map((goal) => ({
+      id: goal.id,
       name: goal.name,
+      type: goal.type,
       current: goal.current.toNumber(),
       target: goal.target.toNumber(),
       progress: (goal.current.toNumber() / goal.target.toNumber()) * 100,
+      deadline: goal.deadline,
+      description: goal.description,
     }));
 
     // Generate recommendations
