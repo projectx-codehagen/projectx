@@ -26,16 +26,17 @@ model User {
     createdAt DateTime @default(now()) @map(name: "created_at")
     updatedAt DateTime @default(now()) @map(name: "updated_at")
 
-    stripeCustomerId       String?      @unique @map(name: "stripe_customer_id")
-    stripeSubscriptionId   String?      @unique @map(name: "stripe_subscription_id")
-    stripePriceId          String?      @map(name: "stripe_price_id")
-    stripeCurrentPeriodEnd DateTime?    @map(name: "stripe_current_period_end")
+    stripeCustomerId       String?       @unique @map(name: "stripe_customer_id")
+    stripeSubscriptionId   String?       @unique @map(name: "stripe_subscription_id")
+    stripePriceId          String?       @map(name: "stripe_price_id")
+    stripeCurrentPeriodEnd DateTime?     @map(name: "stripe_current_period_end")
     workspaceId            String?
-    workspace              Workspace?   @relation(fields: [workspaceId], references: [id])
+    workspace              Workspace?    @relation(fields: [workspaceId], references: [id])
     Category               Category[]
     assets                 Asset[]
     investments            Investment[]
     liabilities            Liability[]
+    savingsGoals           SavingsGoal[]
 
     @@map(name: "users")
 }
@@ -377,6 +378,36 @@ model LiabilityPayment {
     @@map(name: "liability_payments")
 }
 
+model SavingsGoal {
+    id          String            @id @default(cuid())
+    createdAt   DateTime          @default(now())
+    updatedAt   DateTime          @updatedAt
+    name        String
+    target      Decimal
+    current     Decimal           @default(0)
+    deadline    DateTime?
+    description String?
+    isDefault   Boolean           @default(false) // To distinguish between system defaults and user goals
+    type        GoalType          @default(CUSTOM)
+    priority    Int               @default(0) // For ordering goals
+    userId      String
+    user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+    progress    SavingsProgress[]
+
+    @@map(name: "savings_goals")
+}
+
+model SavingsProgress {
+    id        String      @id @default(cuid())
+    createdAt DateTime    @default(now())
+    amount    Decimal
+    date      DateTime
+    goalId    String
+    goal      SavingsGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+    @@map(name: "savings_progress")
+}
+
 enum AccountType {
     BANK
     CRYPTO
@@ -450,6 +481,13 @@ enum PaymentType {
     EXTRA
     INTEREST
     PRINCIPAL
+}
+
+enum GoalType {
+    EMERGENCY_FUND
+    RETIREMENT
+    DOWN_PAYMENT
+    CUSTOM
 }
 
 // if we need full reset : npx prisma db push --force-reset
