@@ -1,9 +1,12 @@
+"use client";
+
 import { getAccountDetails } from "@/actions/banking/get-account-details";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import AccountTransactions from "@/components/transactions/account-transactions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import { BalanceTooltip } from "@/components/transactions/balance-tooltip";
+import { useEffect, useState } from "react";
 
 interface BankingDetailsPageProps {
   params: {
@@ -11,17 +14,30 @@ interface BankingDetailsPageProps {
   };
 }
 
-export default async function BankingDetailsPage({
+export default function BankingDetailsPage({
   params,
 }: BankingDetailsPageProps) {
-  const result = await getAccountDetails(params.id);
-  console.log(result);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!result.success || !result.data) {
-    notFound();
+  const fetchData = async () => {
+    const result = await getAccountDetails(params.id);
+    if (!result.success || !result.data) {
+      notFound();
+    }
+    setData(result.data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [params.id]);
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a proper loading component
   }
 
-  const { account, transactions } = result.data;
+  const { account, transactions } = data;
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -55,7 +71,10 @@ export default async function BankingDetailsPage({
         </Card>
       </div>
 
-      <AccountTransactions transactions={transactions} />
+      <AccountTransactions
+        transactions={transactions}
+        onTransactionUpdate={fetchData}
+      />
     </div>
   );
 }

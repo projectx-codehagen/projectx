@@ -34,6 +34,13 @@ import {
   Coffee,
   type LucideIcon,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  CATEGORIZATION_RULES,
+  suggestCategory,
+} from "@/lib/utils/transaction-categorization";
+import { validateTransactionCategory } from "@/actions/categories/validate-transaction-category";
+import { cn } from "@/lib/utils";
 
 interface AccountTransactionsProps {
   transactions: {
@@ -47,7 +54,9 @@ interface AccountTransactionsProps {
       name: string;
       icon: string;
     };
+    categoryValidated?: boolean;
   }[];
+  onTransactionUpdate: () => Promise<void>;
 }
 
 const categoryIcons: Record<string, LucideIcon> = {
@@ -93,13 +102,46 @@ function getDefaultCategory(type: string, description: string) {
   return null;
 }
 
+function getConfidenceBadgeStyles(confidence: number) {
+  if (confidence >= 0.8) {
+    return "bg-green-100 hover:bg-green-200 text-green-700 border-green-300";
+  }
+  if (confidence >= 0.5) {
+    return "bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border-yellow-300";
+  }
+  return "bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300";
+}
+
+function getConfidenceLabel(confidence: number) {
+  if (confidence >= 0.8) return "High Match";
+  if (confidence >= 0.5) return "Possible Match";
+  return "Suggested";
+}
+
 function renderCategoryWithIcon(
-  category: { name: string; icon: string } | null,
-  type: string,
-  description: string
+  transaction: {
+    id: string;
+    category?: { name: string; icon: string } | null;
+    type: string;
+    description: string;
+    amount: number;
+    categoryValidated?: boolean;
+  },
+  onApproveCategory: (transactionId: string, categoryId: string) => void
 ) {
-  // If no category, try to get a default one based on transaction type
-  const effectiveCategory = category || getDefaultCategory(type, description);
+  const suggestedCategory = !transaction.categoryValidated
+    ? suggestCategory(
+        transaction.description,
+        transaction.amount,
+        transaction.type as "CREDIT" | "DEBIT"
+      )
+    : null;
+
+  const effectiveCategory =
+    transaction.category ||
+    (suggestedCategory
+      ? CATEGORIZATION_RULES.find((r) => r.id === suggestedCategory.categoryId)
+      : null);
 
   if (!effectiveCategory) {
     return (
@@ -119,6 +161,21 @@ function renderCategoryWithIcon(
 
   return (
     <div className="flex items-center gap-2">
+      {!transaction.categoryValidated && suggestedCategory && (
+        <Badge
+          variant="outline"
+          className={cn(
+            "mr-2 cursor-pointer",
+            getConfidenceBadgeStyles(suggestedCategory.confidence)
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            onApproveCategory(transaction.id, suggestedCategory.categoryId);
+          }}
+        >
+          {getConfidenceLabel(suggestedCategory.confidence)}
+        </Badge>
+      )}
       <IconComponent className="h-4 w-4 text-muted-foreground" />
       <span>{formattedName}</span>
     </div>
@@ -127,6 +184,7 @@ function renderCategoryWithIcon(
 
 export default function AccountTransactions({
   transactions,
+  onTransactionUpdate,
 }: AccountTransactionsProps) {
   const [editingTransaction, setEditingTransaction] = useState<string | null>(
     null
@@ -145,9 +203,32 @@ export default function AccountTransactions({
       }
       toast.success("Category updated successfully");
       setEditingTransaction(null);
-      // TODO: Add refresh logic here
+      // Refresh the data
+      await onTransactionUpdate();
     } catch (error) {
       toast.error("Failed to update category");
+    }
+  };
+
+  const handleApproveCategory = async (
+    transactionId: string,
+    categoryId: string
+  ) => {
+    try {
+      // Update the category
+      const updateResult = await updateTransactionCategory(
+        transactionId,
+        categoryId
+      );
+      if (!updateResult.success) {
+        throw new Error(updateResult.error);
+      }
+
+      toast.success("Category approved successfully");
+      // Refresh the data
+      await onTransactionUpdate();
+    } catch (error) {
+      toast.error("Failed to approve category");
     }
   };
 
@@ -184,9 +265,8 @@ export default function AccountTransactions({
                       onClick={() => setEditingTransaction(transaction.id)}
                     >
                       {renderCategoryWithIcon(
-                        transaction.category,
-                        transaction.type,
-                        transaction.description
+                        transaction,
+                        handleApproveCategory
                       )}
                     </div>
                   )}

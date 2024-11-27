@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
+import { ensureDefaultCategories } from "@/lib/utils/transaction-categorization";
 
 interface Category {
   id: string;
@@ -51,25 +52,46 @@ export async function updateTransactionCategory(
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    // Verify category belongs to user
-    const category = await prisma.category.findFirst({
+    // First ensure we have default categories and get the mapping
+    const defaultCategories = await ensureDefaultCategories(userId);
+
+    // Try to find the category directly in the database first
+    let dbCategory = await prisma.category.findFirst({
       where: {
-        id: categoryId,
         userId,
+        id: categoryId,
       },
     });
 
-    if (!category) {
-      throw new Error("Category not found");
+    // If not found directly, try to find it from default categories mapping
+    if (!dbCategory) {
+      const matchingCategory = defaultCategories.find(
+        (cat) => cat.ruleId === categoryId
+      );
+
+      if (!matchingCategory) {
+        throw new Error("Category not found");
+      }
+
+      dbCategory = await prisma.category.findUnique({
+        where: {
+          id: matchingCategory.id,
+        },
+      });
+
+      if (!dbCategory) {
+        throw new Error("Category not found in database");
+      }
     }
 
-    // Update transaction
+    // Update the transaction with the actual database category ID
     await prisma.transaction.update({
       where: {
         id: transactionId,
       },
       data: {
-        categoryId,
+        categoryId: dbCategory.id,
+        categoryValidated: true,
       },
     });
 

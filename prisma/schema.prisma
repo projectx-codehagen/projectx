@@ -147,23 +147,25 @@ model AssetTransaction {
 }
 
 model Transaction {
-    id              String       @id @default(cuid())
-    createdAt       DateTime     @default(now())
-    updatedAt       DateTime     @default(now())
-    accountId       String?
-    assetId         String?
-    currencyIso     String
-    categoryId      String?
-    amount          Decimal
-    date            DateTime
-    description     String
-    originalPayload Json?
-    review          Boolean      @default(false)
-    bankAccount     BankAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
-    asset           Asset?       @relation(fields: [assetId], references: [id], onDelete: Cascade)
-    category        Category?    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    currency        Currency     @relation(fields: [currencyIso], references: [iso], onDelete: Cascade)
-    type            String
+    id                  String       @id @default(cuid())
+    createdAt           DateTime     @default(now())
+    updatedAt           DateTime     @default(now())
+    accountId           String?
+    assetId             String?
+    currencyIso         String
+    categoryId          String?
+    amount              Decimal
+    date                DateTime
+    description         String
+    originalPayload     Json?
+    review              Boolean      @default(false)
+    bankAccount         BankAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+    asset               Asset?       @relation(fields: [assetId], references: [id], onDelete: Cascade)
+    category            Category?    @relation(fields: [categoryId], references: [id])
+    currency            Currency     @relation(fields: [currencyIso], references: [iso], onDelete: Cascade)
+    type                String
+    categoryValidated   Boolean      @default(false)
+    suggestedCategoryId String?
 }
 
 model Category {

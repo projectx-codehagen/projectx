@@ -18,6 +18,7 @@ interface AccountDetails {
     description: string;
     amount: number;
     type: string;
+    categoryValidated?: boolean;
     category?: {
       id: string;
       name: string;
@@ -87,8 +88,9 @@ export async function getAccountDetails(
           id: tx.id,
           date: tx.date,
           description: tx.description,
-          amount: tx.amount,
+          amount: Number(tx.amount),
           type: tx.type,
+          categoryValidated: tx.categoryValidated,
           category: tx.category
             ? {
                 id: tx.category.id,
