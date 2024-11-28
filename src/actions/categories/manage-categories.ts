@@ -23,7 +23,7 @@ export async function getCategories(): Promise<{
     const defaultCategories = await ensureDefaultCategories(userId);
 
     // Map the categories to the expected format
-    const formattedCategories = CATEGORIES.map(category => ({
+    const formattedCategories = CATEGORIES.map((category) => ({
       id: category.id,
       name: category.name,
       icon: category.id, // Using the id as icon identifier
@@ -42,7 +42,7 @@ export async function getCategories(): Promise<{
   }
 }
 
-async function ensureDefaultCategories(userId: string) {
+export async function ensureDefaultCategories(userId: string) {
   const defaultCategories = await Promise.all(
     CATEGORIES.map(async (category) => {
       const dbCategory = await prisma.category.upsert({

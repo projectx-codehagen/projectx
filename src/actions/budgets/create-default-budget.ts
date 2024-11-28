@@ -6,13 +6,13 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 
 const defaultCategoryBudgets = {
-  housing: 2000,
-  food: 800,
-  transport: 400,
-  utilities: 300,
-  entertainment: 200,
-  healthcare: 300,
-  other: 200,
+  Housing: 2000,
+  Food: 800,
+  Transport: 400,
+  Utilities: 300,
+  Entertainment: 200,
+  Healthcare: 300,
+  Other: 200,
 };
 
 export async function createDefaultBudget() {

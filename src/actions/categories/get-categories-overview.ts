@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
+import { CATEGORIES } from "@/lib/config/categories";
 
 interface CategoryOverview {
   totalSpending: number;
@@ -133,75 +134,44 @@ export async function getCategoriesOverview(): Promise<{
 
 async function calculateMonthlySpending(categories: any[]) {
   const monthlyData: Record<string, Record<string, number>> = {};
-  const defaultCategories = {
-    housing: 0,
-    food: 0,
-    transportation: 0,
-    utilities: 0,
-    entertainment: 0,
-    healthcare: 0,
-    other: 0,
-  };
+
+  // Use category names from our config for defaults
+  const defaultCategories = Object.fromEntries(
+    CATEGORIES.map((cat) => [cat.name, 0])
+  );
 
   categories.forEach((category) => {
     category.transactions.forEach((tx: any) => {
-      const date = tx.date.toISOString().split("T")[0].slice(0, 7); // YYYY-MM
+      const date = tx.date.toISOString().split("T")[0].slice(0, 7);
       if (!monthlyData[date]) {
         monthlyData[date] = { ...defaultCategories };
       }
-      // Map category name to our standard categories, defaulting to 'other'
-      const categoryKey = mapCategoryToStandard(category.name);
-      monthlyData[date][categoryKey] =
-        (monthlyData[date][categoryKey] || 0) + tx.amount.toNumber();
+
+      const standardName = mapCategoryToStandard(category);
+      if (standardName) {
+        monthlyData[date][standardName] =
+          (monthlyData[date][standardName] || 0) + tx.amount.toNumber();
+      }
     });
   });
 
   return Object.entries(monthlyData)
     .map(([date, values]) => ({
       date,
-      ...defaultCategories, // Ensure all categories exist
-      ...values, // Override with actual values
+      ...defaultCategories,
+      ...values,
     }))
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function mapCategoryToStandard(categoryName: string): string {
-  const name = categoryName.toLowerCase();
-  if (
-    name.includes("hous") ||
-    name.includes("rent") ||
-    name.includes("mortgage")
-  )
-    return "housing";
-  if (
-    name.includes("food") ||
-    name.includes("grocery") ||
-    name.includes("restaurant")
-  )
-    return "food";
-  if (
-    name.includes("transport") ||
-    name.includes("car") ||
-    name.includes("gas")
-  )
-    return "transportation";
-  if (
-    name.includes("util") ||
-    name.includes("electric") ||
-    name.includes("water")
-  )
-    return "utilities";
-  if (
-    name.includes("entertain") ||
-    name.includes("fun") ||
-    name.includes("hobby")
-  )
-    return "entertainment";
-  if (
-    name.includes("health") ||
-    name.includes("medical") ||
-    name.includes("doctor")
-  )
-    return "healthcare";
-  return "other";
+function mapCategoryToStandard(category: {
+  name: string;
+  icon: string;
+}): string {
+  // Find matching category from our config
+  const matchingCategory = CATEGORIES.find(
+    (c) => c.name.toLowerCase() === category.name.toLowerCase()
+  );
+
+  return matchingCategory?.name || "Other";
 }
