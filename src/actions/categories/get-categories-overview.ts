@@ -37,7 +37,7 @@ interface CategoryOverview {
 
 export async function getCategoriesOverview(): Promise<{
   success: boolean;
-  data?: CategoryOverview;
+  data?: CategoryOverview & { hasBudget: boolean };
   error?: string;
 }> {
   try {
@@ -45,6 +45,11 @@ export async function getCategoriesOverview(): Promise<{
     if (!userId) {
       throw new Error("Unauthorized: No user found");
     }
+
+    // Check if user has any budget
+    const existingBudget = await prisma.budget.findFirst({
+      where: { userId },
+    });
 
     // Get all categories with their transactions and budgets
     const categories = await prisma.category.findMany({
@@ -86,11 +91,16 @@ export async function getCategoriesOverview(): Promise<{
       // Calculate progress towards budget (0 if no budget)
       const progress = budget > 0 ? (amount / budget) * 100 : 0;
 
+      // Find matching category from our config to get the correct color
+      const configCategory = CATEGORIES.find(
+        (c) => c.name.toLowerCase() === category.name.toLowerCase()
+      );
+
       return {
         name: category.name,
         amount,
         budget,
-        color: `hsl(var(--chart-${categories.indexOf(category) + 1}))`,
+        color: configCategory?.color || "hsl(var(--chart-10))", // Use color from config or default to "other" color
         percentage,
         progress,
       };
@@ -98,17 +108,22 @@ export async function getCategoriesOverview(): Promise<{
 
     // Get recent transactions
     const recentTransactions = categories
-      .flatMap((category) =>
-        category.transactions.map((tx) => ({
+      .flatMap((category) => {
+        // Find matching category from config
+        const configCategory = CATEGORIES.find(
+          (c) => c.name.toLowerCase() === category.name.toLowerCase()
+        );
+
+        return category.transactions.map((tx) => ({
           id: tx.id,
           name: tx.description,
           category: category.name,
           amount: tx.amount.toNumber(),
           date: tx.date,
-          icon: category.icon,
-          color: `hsl(var(--chart-${categories.indexOf(category) + 1}))`,
-        }))
-      )
+          icon: configCategory?.id || "other",
+          color: configCategory?.color || "hsl(var(--chart-10))",
+        }));
+      })
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 5);
 
@@ -122,6 +137,7 @@ export async function getCategoriesOverview(): Promise<{
         categoryBreakdown,
         recentTransactions,
         monthlySpending,
+        hasBudget: !!existingBudget,
       },
     };
   } catch (error) {

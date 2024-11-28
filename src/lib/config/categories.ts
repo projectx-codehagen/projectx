@@ -41,7 +41,7 @@ export const CATEGORIES: CategoryConfig[] = [
   },
   {
     id: "food",
-    name: "Food",
+    name: "Food & Dining",
     icon: Utensils,
     color: "hsl(var(--chart-2))",
     keywords: [
