@@ -9,59 +9,46 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-
-// Generate more realistic data with a slight upward trend
-const generateChartData = () => {
-  const baseValue = 1200000;
-  const volatility = 15000;
-  const trend = 2500; // Daily upward trend
-
-  return Array.from({ length: 30 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (30 - i - 1));
-    const randomChange = (Math.random() - 0.5) * volatility;
-    const trendValue = trend * i;
-    return {
-      date: date.toISOString().split("T")[0],
-      value: Math.round(baseValue + randomChange + trendValue),
-    };
-  });
-};
-
-const data = generateChartData();
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 interface TotalAssetsChartProps {
-  variant?: "primary" | "secondary";
+  data?: {
+    date: string;
+    total: number;
+    liquid: number;
+    fixed: number;
+  }[];
+  type?: "total" | "liquid" | "fixed";
 }
 
 export function TotalAssetsChart({
-  variant = "primary",
+  data = [],
+  type = "total",
 }: TotalAssetsChartProps) {
-  const chartConfig = {
-    value: {
-      label: "Total Value",
-      color:
-        variant === "primary" ? "hsl(var(--chart-1))" : "hsl(var(--chart-2))",
-    },
-  } satisfies ChartConfig;
+  const chartData = data.map((item) => ({
+    date: item.date,
+    value: item[type],
+  }));
+
+  const chartColors = {
+    total: "hsl(var(--chart-1))",
+    liquid: "hsl(var(--chart-2))",
+    fixed: "hsl(var(--chart-3))",
+  };
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <ChartContainer config={chartConfig}>
+      <ChartContainer
+        config={{
+          value: {
+            label: `${type.charAt(0).toUpperCase() + type.slice(1)} Value`,
+            color: chartColors[type],
+          },
+        }}
+      >
         <AreaChart
-          data={data}
-          margin={{
-            top: 5,
-            right: 5,
-            left: 5,
-            bottom: 5,
-          }}
+          data={chartData}
+          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
         >
           <CartesianGrid
             vertical={false}
@@ -89,79 +76,12 @@ export function TotalAssetsChart({
             tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
             className="text-xs text-muted-foreground"
           />
-          <ChartTooltip
-            cursor={false}
-            content={({ active, payload }) => {
-              if (active && payload && payload.length) {
-                return (
-                  <div className="rounded-lg border border-border bg-background p-2 shadow-sm">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="flex flex-col">
-                        <span className="text-[0.70rem] uppercase text-muted-foreground">
-                          Value
-                        </span>
-                        <span className="font-bold text-foreground">
-                          ${payload[0]?.value?.toLocaleString() ?? 0}
-                        </span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[0.70rem] uppercase text-muted-foreground">
-                          Date
-                        </span>
-                        <span className="font-bold text-foreground">
-                          {new Date(payload[0].payload.date).toLocaleDateString(
-                            [],
-                            {
-                              month: "short",
-                              day: "numeric",
-                            }
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          <defs>
-            <linearGradient
-              id={`gradientArea-${variant}`}
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
-              <stop
-                offset="5%"
-                stopColor={
-                  variant === "primary"
-                    ? "hsl(var(--chart-1))"
-                    : "hsl(var(--chart-2))"
-                }
-                stopOpacity={0.2}
-              />
-              <stop
-                offset="95%"
-                stopColor={
-                  variant === "primary"
-                    ? "hsl(var(--chart-1))"
-                    : "hsl(var(--chart-2))"
-                }
-                stopOpacity={0}
-              />
-            </linearGradient>
-          </defs>
+          <Tooltip content={<ChartTooltipContent />} />
           <Area
             type="monotone"
             dataKey="value"
-            stroke={
-              variant === "primary"
-                ? "hsl(var(--chart-1))"
-                : "hsl(var(--chart-2))"
-            }
-            fill={`url(#gradientArea-${variant})`}
+            stroke={chartColors[type]}
+            fill="url(#gradientArea-primary)"
             strokeWidth={2}
           />
         </AreaChart>

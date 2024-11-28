@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { createInvestment } from "@/actions/investments/create-investment";
 import {
   Plus,
   Loader2,
@@ -37,11 +37,12 @@ const investmentSchema = z.object({
   name: z.string().min(2, {
     message: "Investment name must be at least 2 characters.",
   }),
-  type: z.enum(["stocks", "crypto", "etf", "other"], {
+  type: z.enum(["STOCKS", "CRYPTO", "ETF", "OTHER"], {
     required_error: "Please select an investment type",
   }),
   amount: z.string().min(1, "Amount is required"),
   shares: z.string().optional(),
+  purchasePrice: z.string().optional(),
   description: z.string().optional(),
 });
 
@@ -49,28 +50,28 @@ type InvestmentFormValues = z.infer<typeof investmentSchema>;
 
 const investmentTypes = [
   {
-    id: "stocks",
+    id: "STOCKS",
     name: "Stocks",
     icon: BarChart2,
     description: "Individual company shares",
   },
   {
-    id: "crypto",
+    id: "CRYPTO",
     name: "Crypto",
     icon: Wallet2,
     description: "Cryptocurrency investments",
   },
   {
-    id: "etf",
+    id: "ETF",
     name: "ETF",
     icon: LineChart,
     description: "Exchange-traded funds",
   },
   {
-    id: "other",
+    id: "OTHER",
     name: "Other",
     icon: Briefcase,
-    description: "Other investment types",
+    description: "Other investments",
   },
 ];
 
@@ -85,6 +86,7 @@ export function AddInvestmentComponent() {
       name: "",
       amount: "",
       shares: "",
+      purchasePrice: "",
       description: "",
     },
   });
@@ -92,14 +94,30 @@ export function AddInvestmentComponent() {
   async function onSubmit(data: InvestmentFormValues) {
     try {
       setIsLoading(true);
-      // Here you would typically call your server action
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("Submitting form data:", data);
+
+      const result = await createInvestment(data);
+      console.log("Create investment result:", result);
+
+      if (!result.success) {
+        if (Array.isArray(result.error)) {
+          result.error.forEach((error) => {
+            form.setError(error.path[0] as any, {
+              message: error.message,
+            });
+          });
+          toast.error("Please check the form for errors");
+          return;
+        }
+        throw new Error(result.error);
+      }
 
       toast.success("Investment added successfully!");
       setOpen(false);
       form.reset();
       setStep(1);
     } catch (error) {
+      console.error("Error in onSubmit:", error);
       toast.error("Failed to add investment");
     } finally {
       setIsLoading(false);

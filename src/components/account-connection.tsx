@@ -32,6 +32,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { createNewAccount } from "@/actions/account/create-new-account";
 import { cn } from "@/lib/utils";
+import { AccountType } from "@prisma/client";
 
 interface BankConnectionProps {
   onAccountAdded?: () => void;
@@ -51,8 +52,8 @@ interface CSVMapping {
 
 interface AccountDetails {
   name: string;
-  accountNumber: string;
   bankName: string;
+  accountType: AccountType;
   currency: string;
   balance?: string;
 }
@@ -73,8 +74,8 @@ export function AddBankAccountComponent({
   const [columnMapping, setColumnMapping] = useState<CSVMapping>({});
   const [accountDetails, setAccountDetails] = useState<AccountDetails>({
     name: "",
-    accountNumber: "",
     bankName: "",
+    accountType: AccountType.BANK,
     currency: "USD",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -171,9 +172,10 @@ export function AddBankAccountComponent({
 
         const result = await createNewAccount({
           name: accountDetails.name,
-          accountNumber: accountDetails.accountNumber,
           bankName: accountDetails.bankName,
+          accountType: accountDetails.accountType,
           currency: accountDetails.currency,
+          balance: accountDetails.balance,
           csvData: {
             date: columnMapping.date!,
             description: columnMapping.description!,
@@ -221,7 +223,6 @@ export function AddBankAccountComponent({
   function isValidAccountDetails() {
     return (
       accountDetails.name.trim() !== "" &&
-      accountDetails.accountNumber.trim() !== "" &&
       accountDetails.bankName.trim() !== "" &&
       accountDetails.currency.trim() !== ""
     );
@@ -236,8 +237,8 @@ export function AddBankAccountComponent({
     setColumnMapping({});
     setAccountDetails({
       name: "",
-      accountNumber: "",
       bankName: "",
+      accountType: AccountType.BANK,
       currency: "USD",
     });
   }
@@ -423,18 +424,34 @@ export function AddBankAccountComponent({
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="accountNumber">Account Number</Label>
-                  <Input
-                    id="accountNumber"
-                    placeholder="Enter account number"
-                    value={accountDetails.accountNumber}
-                    onChange={(e) =>
+                  <Label htmlFor="accountType">Account Type</Label>
+                  <Select
+                    value={accountDetails.accountType}
+                    onValueChange={(value: AccountType) =>
                       setAccountDetails({
                         ...accountDetails,
-                        accountNumber: e.target.value,
+                        accountType: value,
                       })
                     }
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select account type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={AccountType.BANK}>
+                        Checking Account
+                      </SelectItem>
+                      <SelectItem value={AccountType.SAVINGS}>
+                        Savings Account
+                      </SelectItem>
+                      <SelectItem value={AccountType.INVESTMENT}>
+                        Investment Account
+                      </SelectItem>
+                      <SelectItem value={AccountType.CRYPTO}>
+                        Crypto Account
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="grid gap-2">

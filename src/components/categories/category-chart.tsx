@@ -6,71 +6,83 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Label, Pie, PieChart, ResponsiveContainer } from "recharts";
-import * as React from "react";
 
-const data = [
-  { category: "housing", value: 1500, fill: "hsl(var(--chart-1))" },
-  { category: "food", value: 500, fill: "hsl(var(--chart-2))" },
-  { category: "transportation", value: 300, fill: "hsl(var(--chart-3))" },
-  { category: "utilities", value: 200, fill: "hsl(var(--chart-4))" },
-  { category: "entertainment", value: 150, fill: "hsl(var(--chart-5))" },
-  { category: "healthcare", value: 100, fill: "hsl(var(--chart-6))" },
-  { category: "other", value: 250, fill: "hsl(var(--chart-7))" },
-];
+interface CategoryChartProps {
+  data: {
+    name: string;
+    amount: number;
+    budget: number;
+    color: string;
+    percentage: number;
+    progress: number;
+  }[];
+}
 
-const chartConfig = {
-  value: {
-    label: "Total Spending",
-  },
-  housing: {
-    label: "Housing",
-    color: "hsl(var(--chart-1))",
-  },
-  food: {
-    label: "Food",
-    color: "hsl(var(--chart-2))",
-  },
-  transportation: {
-    label: "Transportation",
-    color: "hsl(var(--chart-3))",
-  },
-  utilities: {
-    label: "Utilities",
-    color: "hsl(var(--chart-4))",
-  },
-  entertainment: {
-    label: "Entertainment",
-    color: "hsl(var(--chart-5))",
-  },
-  healthcare: {
-    label: "Healthcare",
-    color: "hsl(var(--chart-6))",
-  },
-  other: {
-    label: "Other",
-    color: "hsl(var(--chart-7))",
-  },
-} as const;
+export function CategoryChart({ data }: CategoryChartProps) {
+  const totalSpending = data.reduce(
+    (sum, category) => sum + Math.abs(category.amount),
+    0
+  );
 
-export function CategoryChart() {
-  const totalSpending = React.useMemo(() => {
-    return data.reduce((acc, curr) => acc + curr.value, 0);
-  }, []);
+  const formatAmount = (amount: number) => {
+    const [dollars, cents] = Math.abs(amount).toFixed(2).split(".");
+    return `$${dollars.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}.${cents}`;
+  };
+
+  const chartData = data
+    .filter((category) => category.amount !== 0 && category.name !== "Income")
+    .map((category) => ({
+      category: category.name,
+      value: Math.abs(category.amount),
+      fill: category.color,
+    }));
+
+  const legendData = data.filter((category) => category.name !== "Income");
 
   return (
     <div className="h-[300px]">
       <ChartContainer
-        config={chartConfig}
-        className="mx-auto aspect-square h-[300px]"
+        config={{
+          value: {
+            label: "Total Spending",
+          },
+          ...data.reduce(
+            (acc, category) => ({
+              ...acc,
+              [category.name]: {
+                label: category.name,
+                color: category.color,
+              },
+            }),
+            {}
+          ),
+        }}
       >
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel />}
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  return (
+                    <ChartTooltipContent
+                      content={[
+                        {
+                          label: data.category,
+                          value: formatAmount(data.value),
+                          color: data.fill,
+                        },
+                      ]}
+                      hideLabel
+                    />
+                  );
+                }
+                return null;
+              }}
             />
             <Pie
-              data={data}
+              data={chartData}
               dataKey="value"
               nameKey="category"
               innerRadius={60}
@@ -79,6 +91,9 @@ export function CategoryChart() {
               <Label
                 content={({ viewBox }) => {
                   if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    const [dollars, cents] = totalSpending
+                      .toFixed(2)
+                      .split(".");
                     return (
                       <text
                         x={viewBox.cx}
@@ -91,7 +106,8 @@ export function CategoryChart() {
                           y={viewBox.cy}
                           className="fill-foreground text-xl font-bold"
                         >
-                          ${totalSpending.toLocaleString()}
+                          ${dollars.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                          <tspan className="text-lg">.{cents}</tspan>
                         </tspan>
                         <tspan
                           x={viewBox.cx}
@@ -110,17 +126,15 @@ export function CategoryChart() {
         </ResponsiveContainer>
       </ChartContainer>
       <div className="flex flex-wrap gap-2 mt-4 justify-center">
-        {data.map((item) => (
-          <div key={item.category} className="flex items-center gap-1.5">
+        {legendData.map((category) => (
+          <div key={category.name} className="flex items-center gap-1.5">
             <div
               className="h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: item.fill }}
+              style={{ backgroundColor: category.color }}
             />
             <span className="text-xs text-muted-foreground">
-              {chartConfig[item.category as keyof typeof chartConfig].label}
-              <span className="ml-1 text-muted-foreground">
-                ${item.value.toLocaleString()}
-              </span>
+              {category.name}
+              <span className="ml-1">{formatAmount(category.amount)}</span>
             </span>
           </div>
         ))}

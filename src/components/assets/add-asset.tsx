@@ -31,13 +31,22 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Loader2, Home, Car, Coins, Briefcase } from "lucide-react";
+import {
+  CalendarIcon,
+  Plus,
+  Loader2,
+  Home,
+  Car,
+  Coins,
+  Briefcase,
+} from "lucide-react";
+import { createAsset } from "@/actions/assets/create-asset";
 
 const assetSchema = z.object({
   name: z.string().min(2, {
     message: "Asset name must be at least 2 characters.",
   }),
-  type: z.enum(["real-estate", "vehicle", "precious-metals", "other"], {
+  type: z.enum(["REAL_ESTATE", "VEHICLE", "PRECIOUS_METALS", "OTHER"], {
     required_error: "Please select an asset type",
   }),
   value: z.string().min(1, "Value is required"),
@@ -49,25 +58,25 @@ type AssetFormValues = z.infer<typeof assetSchema>;
 
 const assetTypes = [
   {
-    id: "real-estate",
+    id: "REAL_ESTATE",
     name: "Real Estate",
     icon: Home,
     description: "Properties and land investments",
   },
   {
-    id: "vehicle",
+    id: "VEHICLE",
     name: "Vehicle",
     icon: Car,
     description: "Cars, boats, and other vehicles",
   },
   {
-    id: "precious-metals",
+    id: "PRECIOUS_METALS",
     name: "Precious Metals",
     icon: Coins,
     description: "Gold, silver, and other metals",
   },
   {
-    id: "other",
+    id: "OTHER",
     name: "Other Assets",
     icon: Briefcase,
     description: "Art, collectibles, and other valuables",
@@ -91,14 +100,39 @@ export function AddAssetComponent() {
   async function onSubmit(data: AssetFormValues) {
     try {
       setIsLoading(true);
-      // Here you would typically call your server action
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+      console.log("Submitting form data:", data);
+
+      const result = await createAsset({
+        ...data,
+        type: data.type as
+          | "REAL_ESTATE"
+          | "VEHICLE"
+          | "PRECIOUS_METALS"
+          | "OTHER",
+        value: data.value.toString(),
+      });
+
+      console.log("Create asset result:", result);
+
+      if (!result.success) {
+        if (Array.isArray(result.error)) {
+          result.error.forEach((error) => {
+            form.setError(error.path[0] as any, {
+              message: error.message,
+            });
+          });
+          toast.error("Please check the form for errors");
+          return;
+        }
+        throw new Error(result.error);
+      }
+
       toast.success("Asset added successfully!");
       setOpen(false);
       form.reset();
       setStep(1);
     } catch (error) {
+      console.error("Error in onSubmit:", error);
       toast.error("Failed to add asset");
     } finally {
       setIsLoading(false);
@@ -122,7 +156,9 @@ export function AddAssetComponent() {
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="flex flex-col items-center gap-2">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Adding your asset...</p>
+              <p className="text-sm text-muted-foreground">
+                Adding your asset...
+              </p>
             </div>
           </div>
         )}
@@ -142,7 +178,9 @@ export function AddAssetComponent() {
                     ? "border-primary shadow-md"
                     : "hover:border-primary hover:shadow-sm"
                 }`}
-                onClick={() => handleAssetTypeSelect(type.id as AssetFormValues["type"])}
+                onClick={() =>
+                  handleAssetTypeSelect(type.id as AssetFormValues["type"])
+                }
               >
                 <CardContent className="flex flex-col items-center text-center p-6">
                   <type.icon className="h-10 w-10 mb-3" />

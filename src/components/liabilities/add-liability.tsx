@@ -40,12 +40,13 @@ import {
   Car,
   GraduationCap,
 } from "lucide-react";
+import { createLiability } from "@/actions/liabilities/create-liability";
 
 const liabilitySchema = z.object({
   name: z.string().min(2, {
     message: "Liability name must be at least 2 characters.",
   }),
-  type: z.enum(["mortgage", "credit-card", "car-loan", "student-loan"], {
+  type: z.enum(["MORTGAGE", "CREDIT_CARD", "CAR_LOAN", "STUDENT_LOAN"], {
     required_error: "Please select a liability type",
   }),
   amount: z.string().min(1, "Amount is required"),
@@ -59,25 +60,25 @@ type LiabilityFormValues = z.infer<typeof liabilitySchema>;
 
 const liabilityTypes = [
   {
-    id: "mortgage",
+    id: "MORTGAGE",
     name: "Mortgage",
     icon: Home,
     description: "Home or property loans",
   },
   {
-    id: "credit-card",
+    id: "CREDIT_CARD",
     name: "Credit Card",
     icon: CreditCard,
     description: "Credit card balances",
   },
   {
-    id: "car-loan",
+    id: "CAR_LOAN",
     name: "Car Loan",
     icon: Car,
     description: "Vehicle financing",
   },
   {
-    id: "student-loan",
+    id: "STUDENT_LOAN",
     name: "Student Loan",
     icon: GraduationCap,
     description: "Education debt",
@@ -103,8 +104,20 @@ export function AddLiabilityComponent() {
   async function onSubmit(data: LiabilityFormValues) {
     try {
       setIsLoading(true);
-      // Here you would typically call your server action
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await createLiability(data);
+
+      if (!result.success) {
+        if (Array.isArray(result.error)) {
+          result.error.forEach((error) => {
+            form.setError(error.path[0] as any, {
+              message: error.message,
+            });
+          });
+          toast.error("Please check the form for errors");
+          return;
+        }
+        throw new Error(result.error);
+      }
 
       toast.success("Liability added successfully!");
       setOpen(false);

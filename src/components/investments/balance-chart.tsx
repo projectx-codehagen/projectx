@@ -1,64 +1,74 @@
 "use client";
 
 import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  CartesianGrid,
-  XAxis,
   Area,
   AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  CartesianGrid,
 } from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-
-// Generate more realistic data with a slight upward trend
-const generateChartData = () => {
-  const baseValue = 6800;
-  const volatility = 150;
-  const trend = 25; // Daily upward trend
-
-  return Array.from({ length: 30 }, (_, i) => {
-    const randomChange = (Math.random() - 0.5) * volatility;
-    const trendValue = trend * i;
-    return {
-      date: `2024-01-${(i + 1).toString().padStart(2, "0")}`,
-      value: Math.round(baseValue + randomChange + trendValue),
-    };
-  });
-};
-
-const data = generateChartData();
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 interface BalanceChartProps {
-  variant?: "primary" | "secondary";
+  data?: {
+    date: string;
+    total: number;
+    stocks: number;
+    crypto: number;
+    other: number;
+  }[];
+  type?: "total" | "stocks" | "crypto" | "other";
 }
 
-export function BalanceChart({ variant = "primary" }: BalanceChartProps) {
-  const chartConfig = {
-    value: {
-      label: "Portfolio Value",
-      color:
-        variant === "primary" ? "hsl(var(--chart-1))" : "hsl(var(--chart-2))",
-    },
-  } satisfies ChartConfig;
+export function BalanceChart({ data = [], type = "total" }: BalanceChartProps) {
+  const chartData = data.map((item) => ({
+    date: item.date,
+    value: item[type],
+  }));
+
+  const chartColors = {
+    total: "hsl(var(--chart-1))",
+    stocks: "hsl(var(--chart-2))",
+    crypto: "hsl(var(--chart-3))",
+    other: "hsl(var(--chart-4))",
+  };
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <ChartContainer config={chartConfig}>
+      <ChartContainer
+        config={{
+          value: {
+            label: `${type.charAt(0).toUpperCase() + type.slice(1)} Value`,
+            color: chartColors[type],
+          },
+        }}
+      >
         <AreaChart
-          data={data}
-          margin={{
-            top: 5,
-            right: 5,
-            left: 5,
-            bottom: 5,
-          }}
+          data={chartData}
+          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
         >
+          <defs>
+            <linearGradient
+              id={`gradientArea-${type}`}
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="1"
+            >
+              <stop
+                offset="5%"
+                stopColor={chartColors[type]}
+                stopOpacity={0.3}
+              />
+              <stop
+                offset="95%"
+                stopColor={chartColors[type]}
+                stopOpacity={0}
+              />
+            </linearGradient>
+          </defs>
           <CartesianGrid
             vertical={false}
             strokeDasharray="3 3"
@@ -69,78 +79,29 @@ export function BalanceChart({ variant = "primary" }: BalanceChartProps) {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tickFormatter={(value) => value.split("-")[2]}
+            tickFormatter={(value) => {
+              const date = new Date(value);
+              return date.toLocaleDateString([], {
+                month: "short",
+                day: "numeric",
+              });
+            }}
             className="text-xs text-muted-foreground"
           />
-          <ChartTooltip
-            cursor={false}
-            content={({ active, payload }) => {
-              if (active && payload && payload.length) {
-                return (
-                  <div className="rounded-lg border border-border bg-background p-2 shadow-sm">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="flex flex-col">
-                        <span className="text-[0.70rem] uppercase text-muted-foreground">
-                          Value
-                        </span>
-                        <span className="font-bold text-foreground">
-                          ${payload[0].value}
-                        </span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[0.70rem] uppercase text-muted-foreground">
-                          Date
-                        </span>
-                        <span className="font-bold text-foreground">
-                          {payload[0].payload.date.split("-")[2]}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-              return null;
-            }}
+          <YAxis
+            orientation="right"
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+            className="text-xs text-muted-foreground"
           />
-          <defs>
-            <linearGradient
-              id={`fillGradient-${variant}`}
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
-              <stop
-                offset="5%"
-                stopColor={
-                  variant === "primary"
-                    ? "hsl(var(--chart-1))"
-                    : "hsl(var(--chart-2))"
-                }
-                stopOpacity={0.3}
-              />
-              <stop
-                offset="95%"
-                stopColor={
-                  variant === "primary"
-                    ? "hsl(var(--chart-1))"
-                    : "hsl(var(--chart-2))"
-                }
-                stopOpacity={0}
-              />
-            </linearGradient>
-          </defs>
+          <Tooltip content={<ChartTooltipContent />} />
           <Area
             type="monotone"
             dataKey="value"
-            stroke={
-              variant === "primary"
-                ? "hsl(var(--chart-1))"
-                : "hsl(var(--chart-2))"
-            }
+            stroke={chartColors[type]}
+            fill={`url(#gradientArea-${type})`}
             strokeWidth={2}
-            fill={`url(#fillGradient-${variant})`}
-            dot={false}
           />
         </AreaChart>
       </ChartContainer>
