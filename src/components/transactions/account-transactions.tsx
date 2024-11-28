@@ -16,7 +16,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Tag, CheckCircle, Pencil, Plus } from "lucide-react";
+import {
+  MoreHorizontal,
+  Tag,
+  CheckCircle,
+  Pencil,
+  Plus,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { CategorySelect } from "@/components/categories/category-select";
@@ -128,7 +135,8 @@ function renderCategoryWithIcon(
     categoryValidated?: boolean;
   },
   onApproveCategory: (transactionId: string, categoryId: string) => void,
-  setEditingTransaction: (id: string | null) => void
+  setEditingTransaction: (id: string | null) => void,
+  approvingCategory: string | null
 ) {
   const suggestedCategory = !transaction.categoryValidated
     ? suggestCategory(
@@ -156,15 +164,26 @@ function renderCategoryWithIcon(
           variant="outline"
           className={cn(
             "mr-2 cursor-pointer transition-all hover:scale-105",
-            getConfidenceBadgeStyles(suggestedCategory.confidence)
+            getConfidenceBadgeStyles(suggestedCategory.confidence),
+            approvingCategory === transaction.id &&
+              "pointer-events-none opacity-70"
           )}
           onClick={(e) => {
             e.stopPropagation();
             onApproveCategory(transaction.id, suggestedCategory.categoryId);
           }}
         >
-          <CheckCircle className="h-3 w-3 mr-1" />
-          Accept Suggestion
+          {approvingCategory === transaction.id ? (
+            <>
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              Approving...
+            </>
+          ) : (
+            <>
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Accept Suggestion
+            </>
+          )}
         </Badge>
       )}
       <div className="flex items-center gap-2 cursor-pointer hover:text-primary">
@@ -190,6 +209,9 @@ export default function AccountTransactions({
   onTransactionUpdate,
 }: AccountTransactionsProps) {
   const [editingTransaction, setEditingTransaction] = useState<string | null>(
+    null
+  );
+  const [approvingCategory, setApprovingCategory] = useState<string | null>(
     null
   );
 
@@ -218,6 +240,7 @@ export default function AccountTransactions({
     categoryId: string
   ) => {
     try {
+      setApprovingCategory(transactionId);
       // Update the category
       const updateResult = await updateTransactionCategory(
         transactionId,
@@ -232,6 +255,8 @@ export default function AccountTransactions({
       await onTransactionUpdate();
     } catch (error) {
       toast.error("Failed to approve category");
+    } finally {
+      setApprovingCategory(null);
     }
   };
 
@@ -269,7 +294,8 @@ export default function AccountTransactions({
                       {renderCategoryWithIcon(
                         transaction,
                         handleApproveCategory,
-                        setEditingTransaction
+                        setEditingTransaction,
+                        approvingCategory
                       )}
                     </div>
                   )}
