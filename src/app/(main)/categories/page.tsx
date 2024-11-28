@@ -27,97 +27,67 @@ export default async function CategoriesPage() {
       {data?.hasBudget && <BudgetSummary data={data} />}
 
       <div className="grid gap-4 md:grid-cols-2">
-        {data?.categoryBreakdown && data.categoryBreakdown.length > 0 ? (
-          <Card>
+        <div className="flex flex-col gap-4">
+          <Card className="flex-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Spending by Category
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CategoryChart data={data.categoryBreakdown} />
+              {data?.categoryBreakdown && data.categoryBreakdown.length > 0 ? (
+                <CategoryChart data={data.categoryBreakdown} />
+              ) : (
+                <EmptyPlaceholder>
+                  <EmptyPlaceholder.Icon icon={PieChart} />
+                  <EmptyPlaceholder.Title>
+                    No spending data
+                  </EmptyPlaceholder.Title>
+                  <EmptyPlaceholder.Description>
+                    Add categories and transactions to see your spending
+                    breakdown.
+                  </EmptyPlaceholder.Description>
+                </EmptyPlaceholder>
+              )}
             </CardContent>
           </Card>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Spending by Category</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <EmptyPlaceholder>
-                <EmptyPlaceholder.Icon icon={PieChart} />
-                <EmptyPlaceholder.Title>
-                  No spending data
-                </EmptyPlaceholder.Title>
-                <EmptyPlaceholder.Description>
-                  Add categories and transactions to see your spending
-                  breakdown.
-                </EmptyPlaceholder.Description>
-              </EmptyPlaceholder>
-            </CardContent>
-          </Card>
-        )}
 
-        {data?.categoryBreakdown && data.categoryBreakdown.length > 0 ? (
-          <Card>
+          <Card className="flex-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Category Breakdown
+                Recent Transactions
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CategoryList data={data.categoryBreakdown} />
+              {data?.recentTransactions &&
+              data.recentTransactions.length > 0 ? (
+                <RecentTransactions data={data.recentTransactions} />
+              ) : (
+                <EmptyPlaceholder>
+                  <EmptyPlaceholder.Icon icon={Receipt} />
+                  <EmptyPlaceholder.Title>
+                    No transactions yet
+                  </EmptyPlaceholder.Title>
+                  <EmptyPlaceholder.Description>
+                    Transactions will appear here as you add them.
+                  </EmptyPlaceholder.Description>
+                </EmptyPlaceholder>
+              )}
             </CardContent>
           </Card>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Category Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <EmptyPlaceholder>
-                <EmptyPlaceholder.Icon icon={List} />
-                <EmptyPlaceholder.Title>
-                  No categories yet
-                </EmptyPlaceholder.Title>
-                <EmptyPlaceholder.Description>
-                  Add your first category to start tracking expenses.
-                </EmptyPlaceholder.Description>
-              </EmptyPlaceholder>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+        </div>
 
-      {data?.recentTransactions && data.recentTransactions.length > 0 ? (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="h-full">
+          <CardHeader>
             <CardTitle className="text-sm font-medium">
-              Recent Transactions
+              Category Breakdown
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <RecentTransactions data={data.recentTransactions} />
+            <CategoryList data={data?.categoryBreakdown || []} />
           </CardContent>
         </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <EmptyPlaceholder>
-              <EmptyPlaceholder.Icon icon={Receipt} />
-              <EmptyPlaceholder.Title>
-                No transactions yet
-              </EmptyPlaceholder.Title>
-              <EmptyPlaceholder.Description>
-                Transactions will appear here as you add them.
-              </EmptyPlaceholder.Description>
-            </EmptyPlaceholder>
-          </CardContent>
-        </Card>
-      )}
+      </div>
     </div>
   );
 }
