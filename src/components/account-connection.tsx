@@ -94,7 +94,7 @@ export function AddBankAccountComponent({
           headers.map((header, index) => ({
             header: header.trim(),
             index,
-          }))
+          })),
         );
       };
       reader.readAsText(file);
@@ -131,7 +131,7 @@ export function AddBankAccountComponent({
           headers.map((header, index) => ({
             header: header.trim(),
             index,
-          }))
+          })),
         );
       };
       reader.readAsText(file);
@@ -266,12 +266,12 @@ export function AddBankAccountComponent({
             {step === 1
               ? "Add Bank Account"
               : step === 2
-              ? "Select Your Bank"
-              : step === 3
-              ? "Upload CSV File"
-              : step === 4
-              ? "Account Details"
-              : "Map CSV Columns"}
+                ? "Select Your Bank"
+                : step === 3
+                  ? "Upload CSV File"
+                  : step === 4
+                    ? "Account Details"
+                    : "Map CSV Columns"}
           </DialogTitle>
         </DialogHeader>
         <div className="mt-4">
@@ -279,12 +279,12 @@ export function AddBankAccountComponent({
             {step === 1
               ? "Choose how you want to add your bank account"
               : step === 2
-              ? "Connect to your bank for automatic import"
-              : step === 3
-              ? "Upload your bank statement CSV file"
-              : step === 4
-              ? "Enter your account details"
-              : "Map your CSV columns to the correct fields"}
+                ? "Connect to your bank for automatic import"
+                : step === 3
+                  ? "Upload your bank statement CSV file"
+                  : step === 4
+                    ? "Enter your account details"
+                    : "Map your CSV columns to the correct fields"}
           </p>
 
           {step === 1 && (
@@ -340,7 +340,7 @@ export function AddBankAccountComponent({
                   isDragging
                     ? "border-primary bg-primary/5"
                     : "border-muted-foreground/25 hover:border-primary/50",
-                  "relative"
+                  "relative",
                 )}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -356,7 +356,7 @@ export function AddBankAccountComponent({
                   <FileSpreadsheet
                     className={cn(
                       "h-10 w-10 mb-3",
-                      isDragging ? "text-primary" : "text-muted-foreground"
+                      isDragging ? "text-primary" : "text-muted-foreground",
                     )}
                   />
                   <p className="text-sm font-medium mb-1">
@@ -404,9 +404,6 @@ export function AddBankAccountComponent({
 
           {step === 4 && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground text-center mb-4">
-                Enter your account details
-              </p>
               <div className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="accountName">Account Name</Label>
@@ -513,9 +510,6 @@ export function AddBankAccountComponent({
 
           {step === 5 && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground text-center mb-4">
-                Map your CSV columns to the correct fields
-              </p>
               <div className="grid gap-4">
                 <div className="grid grid-cols-2 gap-2 items-center">
                   <span className="text-sm">Date</span>
